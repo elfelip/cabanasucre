@@ -3,6 +3,8 @@
 from time import sleep
 import RPi.GPIO as GPIO
 
+def lancer_alerte_vide():
+    print("Alerte, Le chaudron est vide.")
 
 def lancer_alerte_bas():
     print("Alerte: niveau trop bas, le réservoir est probablement vide")
@@ -43,6 +45,8 @@ def main():
             fermer_valve()
         elif (GPIO.input(NIV_BAS_ALERTE) and GPIO.input(NIV_BAS) and GPIO.input(NIV_MAX)) and GPIO.input(NIV_MAX_ALERTE):
             lancer_alerte_max()
+        elif not (GPIO.input(NIV_BAS_ALERTE) or GPIO.input(NIV_BAS) or GPIO.input(NIV_MAX) or GPIO.input(NIV_MAX_ALERTE)):
+            lancer_alerte_vide()
         else:
             lancer_erreur_niveau()
             
