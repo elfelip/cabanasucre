@@ -38,7 +38,7 @@ def main():
             (GPIO.input(NIV_BAS) or GPIO.input(NIV_MAX) or GPIO.input(NIV_MAX_ALERTE)))):
             lancer_alerte_bas()
         elif ((GPIO.input(NIV_BAS_ALERTE) and GPIO.input(NIV_BAS)) and not
-            (GPIO.input(NIV_MAX) or GPIO(NIV_MAX_ALERTE))):
+            (GPIO.input(NIV_MAX) or GPIO.input(NIV_MAX_ALERTE))):
             ouvrir_valve()
         elif ((GPIO.input(NIV_BAS_ALERTE) and GPIO.input(NIV_BAS) and GPIO.input(NIV_MAX)) and not
             GPIO.input(NIV_MAX_ALERTE)):
