@@ -51,7 +51,7 @@ class NiveauCtrlCmd:
         if channel is not None:
             print("Channel: {0}".format(channel))
         time.sleep(0.5)
-        if ((GPIO.input(self.NIV_MIN) and not 
+        if ((GPIO.input(self.NIV_BAS_ALERTE) and not 
             (GPIO.input(self.NIV_BAS) or GPIO.input(self.NIV_MAX) or GPIO.input(self.NIV_MAX_ALERTE)))):
             self.lancer_min()
             if self.DERNIER_NIVEAU is None or self.DERNIER_NIVEAU == "normal":
