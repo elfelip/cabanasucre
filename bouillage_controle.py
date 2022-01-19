@@ -32,7 +32,8 @@ def lancer_erreur_niveau():
     print("Les informations de niveau sont incohérents, il doit y avoir un problème avec la sonde.")
 
 def traiter_inputs_callback(channel):
-    print("Channel: {0}".format(channel))
+    if channel is not None:
+        print("Channel: {0}".format(channel))
     if ((GPIO.input(NIV_BAS_ALERTE) and not 
         (GPIO.input(NIV_BAS) or GPIO.input(NIV_MAX) or GPIO.input(NIV_MAX_ALERTE)))):
         lancer_alerte_bas()
@@ -56,8 +57,8 @@ def main():
 
     for connecteur in connecteurs:
         GPIO.setup(connecteur, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-        GPIO.add_event_detect(connecteur, GPIO.RISING, callback=traiter_inputs_callback, bouncetime=200)
-
+        GPIO.add_event_detect(connecteur, GPIO.BOTH, callback=traiter_inputs_callback, bouncetime=200)
+    traiter_inputs_callback(channel=None)
     signal.signal(signal.SIGINT, signal_handler)
     signal.pause()
             
