@@ -31,7 +31,8 @@ def lancer_alerte_max():
 def lancer_erreur_niveau():
     print("Les informations de niveau sont incohérents, il doit y avoir un problème avec la sonde.")
 
-def traiter_inputs_callback():
+def traiter_inputs_callback(channel):
+    print("Channel: {0}".format(channel))
     if ((GPIO.input(NIV_BAS_ALERTE) and not 
         (GPIO.input(NIV_BAS) or GPIO.input(NIV_MAX) or GPIO.input(NIV_MAX_ALERTE)))):
         lancer_alerte_bas()
