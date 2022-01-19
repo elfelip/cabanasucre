@@ -4,10 +4,10 @@ import signal
 import sys
 import RPi.GPIO as GPIO
 
-NIV_BAS_ALERTE = 7
-NIV_BAS = 11
-NIV_MAX = 13
-NIV_MAX_ALERTE = 15
+NIV_BAS_ALERTE = 4
+NIV_BAS = 17
+NIV_MAX = 27
+NIV_MAX_ALERTE = 22
 
 def signal_handler(sig, frame):
     GPIO.cleanup()
