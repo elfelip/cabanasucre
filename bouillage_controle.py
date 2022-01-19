@@ -2,6 +2,7 @@
 
 import signal
 import sys
+import time
 import RPi.GPIO as GPIO
 
 NIV_BAS_ALERTE = 4
@@ -34,6 +35,7 @@ def lancer_erreur_niveau():
 def traiter_inputs_callback(channel):
     if channel is not None:
         print("Channel: {0}".format(channel))
+    time.sleep(0.5)
     if ((GPIO.input(NIV_BAS_ALERTE) and not 
         (GPIO.input(NIV_BAS) or GPIO.input(NIV_MAX) or GPIO.input(NIV_MAX_ALERTE)))):
         lancer_alerte_bas()
