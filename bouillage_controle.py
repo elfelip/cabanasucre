@@ -38,7 +38,7 @@ class NiveauCtrlCmd:
     def fermer_valve(self):
         print("Fermer le valve.")
         
-    def lancer_alerte_niveau_haut(self):
+    def lancer_alerte_haut(self):
         print("Le niveau du réservoir est haut.")
 
     def lancer_alerte_max(self):
@@ -53,7 +53,7 @@ class NiveauCtrlCmd:
         time.sleep(0.5)
         if ((GPIO.input(self.NIV_BAS_ALERTE) and not 
             (GPIO.input(self.NIV_BAS) or GPIO.input(self.NIV_MAX) or GPIO.input(self.NIV_MAX_ALERTE)))):
-            self.lancer_min()
+            self.lancer_alerte_min()
             if self.DERNIER_NIVEAU is None or self.DERNIER_NIVEAU == "normal":
                 self.ouvrir_valve()
             self.DERNIER_NIVEAU = "min"
@@ -85,7 +85,7 @@ def signal_handler(sig, frame):
 
 def main():
     crtl_cmd = NiveauCtrlCmd()
-    signal.signal(signal.SIGINT, crtl_cmd.signal_handler)
+    signal.signal(signal.SIGINT, signal_handler)
     signal.pause()
 
 if __name__ == "__main__":
