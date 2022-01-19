@@ -15,7 +15,7 @@ class NiveauCtrlCmd:
     def __init__(self) -> None:
         GPIO.setmode(GPIO.BCM)
     
-        connecteurs = [NIV_BAS_ALERTE, NIV_BAS, NIV_MAX, NIV_MAX_ALERTE]
+        connecteurs = [self.NIV_BAS_ALERTE, self.NIV_BAS, self.NIV_MAX, self.NIV_MAX_ALERTE]
 
         for connecteur in connecteurs:
             GPIO.setup(connecteur, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
