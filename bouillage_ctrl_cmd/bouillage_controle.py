@@ -15,12 +15,11 @@ class NiveauCtrlCmd:
     NIV_HAUT = 27
     NIV_MAX = 22
     ERREUR = 0
-    VIDE = 1
-    MIN = 2
-    BAS = 3
-    NORMAL = 4
-    HAUT = 5
-    MAX = 6
+    MIN = 1
+    BAS = 2
+    NORMAL = 3
+    HAUT = 4
+    MAX = 5
     
     def __init__(self):
         GPIO.setmode(GPIO.BCM)
@@ -82,6 +81,7 @@ class NiveauCtrlCmd:
     
     def traiter_gpio_down_pour_sonde_min(self, channel=None):
         if self.NIVEAU != self.MIN:
+            self.ouvrir_valve()
             self.lancer_alerte_min()
         self.NIVEAU = self.MIN
 
@@ -131,7 +131,7 @@ class NiveauCtrlCmd:
         elif (GPIO.input(self.NIV_MIN) and GPIO.input(self.NIV_BAS) and GPIO.input(self.NIV_HAUT)) and GPIO.input(self.NIV_MAX):
             self.NIVEAU = self.MAX
         elif not (GPIO.input(self.NIV_MIN) or GPIO.input(self.NIV_BAS) or GPIO.input(self.NIV_HAUT) or GPIO.input(self.NIV_MAX)):
-            self.NIVEAU = self.VIDE
+            self.NIVEAU = self.MIN
         else:
             self.NIVEAU = self.ERREUR
 
