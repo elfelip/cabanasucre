@@ -6,8 +6,8 @@ IN = 2
 OUT = 3
 BOTH = 4
 PUD_DOWN = 5
-UP = 6
-DOWN = 7
+RISING = 6
+FALLING = 7
 
 def setmode(mode):
     pass

@@ -28,23 +28,23 @@ class NiveauCtrlCmd:
 
         for connecteur in connecteurs:
             GPIO.setup(connecteur, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-            up_callback = None
-            down_callback = None
+            rising_callback = None
+            falling_callback = None
             if connecteur == self.NIV_MIN:
-                up_callback = self.traiter_gpio_up_pour_sonde_min
-                down_callback = self.traiter_gpio_down_pour_sonde_min
+                rising_callback = self.traiter_gpio_rising_pour_sonde_min
+                falling_callback = self.traiter_gpio_falling_pour_sonde_min
             if connecteur == self.NIV_BAS:
-                up_callback = self.traiter_gpio_up_pour_sonde_bas
-                down_callback = self.traiter_gpio_down_pour_sonde_bas
+                rising_callback = self.traiter_gpio_rising_pour_sonde_bas
+                falling_callback = self.traiter_gpio_falling_pour_sonde_bas
             if connecteur == self.NIV_HAUT:
-                up_callback = self.traiter_gpio_up_pour_sonde_haut
-                down_callback = self.traiter_gpio_down_pour_sonde_haut
+                rising_callback = self.traiter_gpio_rising_pour_sonde_haut
+                falling_callback = self.traiter_gpio_falling_pour_sonde_haut
             if connecteur == self.NIV_MAX:
-                up_callback = self.traiter_gpio_up_pour_sonde_max
-                down_callback = self.traiter_gpio_down_pour_sonde_max
-            if up_callback is not None and down_callback is not None:
-                GPIO.add_event_detect(connecteur, GPIO.UP, callback=up_callback, bouncetime=200)
-                GPIO.add_event_detect(connecteur, GPIO.DOWN, callback=down_callback, bouncetime=200)
+                rising_callback = self.traiter_gpio_rising_pour_sonde_max
+                falling_callback = self.traiter_gpio_falling_pour_sonde_max
+            if rising_callback is not None and falling_callback is not None:
+                GPIO.add_event_detect(connecteur, GPIO.RISING, callback=rising_callback, bouncetime=200)
+                GPIO.add_event_detect(connecteur, GPIO.FALLING, callback=falling_callback, bouncetime=200)
         self.mesurer_niveau()
 
     def lancer_alerte_vide(self):
@@ -74,46 +74,46 @@ class NiveauCtrlCmd:
     def lancer_erreur_niveau(self):
         print("Les informations de niveau sont incoherents. Il doit y avoir un probleme avec la sonde.")
 
-    def traiter_gpio_up_pour_sonde_min(self, channel=None):
+    def traiter_gpio_rising_pour_sonde_min(self, channel=None):
         if self.NIVEAU != self.BAS:
             self.lancer_alerte_bas()
         self.NIVEAU = self.BAS
     
-    def traiter_gpio_down_pour_sonde_min(self, channel=None):
+    def traiter_gpio_falling_pour_sonde_min(self, channel=None):
         if self.NIVEAU != self.MIN:
             self.ouvrir_valve()
             self.lancer_alerte_min()
         self.NIVEAU = self.MIN
 
-    def traiter_gpio_up_pour_sonde_bas(self, channel=None):
+    def traiter_gpio_rising_pour_sonde_bas(self, channel=None):
         if self.NIVEAU != self.NORMAL:
             self.lancer_alerte_normal()
         self.NIVEAU = self.NORMAL
     
-    def traiter_gpio_down_pour_sonde_bas(self, channel=None):
+    def traiter_gpio_falling_pour_sonde_bas(self, channel=None):
         if self.NIVEAU != self.BAS:
             self.ouvrir_valve()
             self.lancer_alerte_min()
         self.NIVEAU = self.BAS
 
-    def traiter_gpio_up_pour_sonde_haut(self, channel=None):
+    def traiter_gpio_rising_pour_sonde_haut(self, channel=None):
         if self.NIVEAU != self.HAUT:
             self.fermer_valve()
             self.lancer_alerte_haut()
         self.NIVEAU = self.HAUT
     
-    def traiter_gpio_down_pour_sonde_haut(self, channel=None):
+    def traiter_gpio_falling_pour_sonde_haut(self, channel=None):
         if self.NIVEAU != self.NORMAL:
             self.lancer_alerte_normal()
         self.NIVEAU = self.NORMAL
 
-    def traiter_gpio_up_pour_sonde_max(self, channel=None):
+    def traiter_gpio_rising_pour_sonde_max(self, channel=None):
         if self.NIVEAU != self.MAX:
             self.fermer_valve()
             self.lancer_alerte_max()
         self.NIVEAU = self.MAX
     
-    def traiter_gpio_down_pour_sonde_max(self, channel=None):
+    def traiter_gpio_falling_pour_sonde_max(self, channel=None):
         if self.NIVEAU != self.HAUT:
             self.lancer_alerte_haut()
         self.NIVEAU = self.HAUT
