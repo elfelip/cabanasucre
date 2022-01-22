@@ -22,11 +22,16 @@ class NiveauCtrlCmd:
     MAX = 5
     
     def __init__(self):
+        print("setmode: GPIO.BCM: {0}".format(GPIO.BCM))
         GPIO.setmode(GPIO.BCM)
     
         connecteurs = [self.NIV_MIN, self.NIV_BAS, self.NIV_HAUT, self.NIV_MAX]
 
         for connecteur in connecteurs:
+            print ("setup connecteur {0} mode GPIO.IN: {1} pull_up_down GPIO.PUD_DOWN {3}".format(
+                connecteur, 
+                GPIO.IN,
+                GPIO.PUD_DOWN))
             GPIO.setup(connecteur, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
             rising_callback = None
             falling_callback = None
@@ -43,7 +48,9 @@ class NiveauCtrlCmd:
                 rising_callback = self.traiter_gpio_rising_pour_sonde_max
                 falling_callback = self.traiter_gpio_falling_pour_sonde_max
             if rising_callback is not None and falling_callback is not None:
+                print ("add_event_detect connecteur: {0}, GPIO.RISING {1}".format(connecteur, GPIO.RISING))
                 GPIO.add_event_detect(connecteur, GPIO.RISING, callback=rising_callback, bouncetime=200)
+                print ("add_event_detect connecteur: {0}, GPIO.FALLING {1}".format(connecteur, GPIO.FALLING))
                 GPIO.add_event_detect(connecteur, GPIO.FALLING, callback=falling_callback, bouncetime=200)
         self.mesurer_niveau()
 
