@@ -28,7 +28,7 @@ class NiveauCtrlCmd:
         connecteurs = [self.NIV_MIN, self.NIV_BAS, self.NIV_HAUT, self.NIV_MAX]
 
         for connecteur in connecteurs:
-            print ("setup connecteur {0} mode GPIO.IN: {1} pull_up_down GPIO.PUD_DOWN {3}".format(
+            print ("setup connecteur {0} mode GPIO.IN: {1} pull_up_down GPIO.PUD_DOWN {2}".format(
                 connecteur, 
                 GPIO.IN,
                 GPIO.PUD_DOWN))
