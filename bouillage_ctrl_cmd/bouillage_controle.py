@@ -188,35 +188,16 @@ class NiveauCtrlCmd:
         etat_niv_bas = GPIO.input(self.NIV_BAS_R)
         etat_niv_haut = GPIO.input(self.NIV_HAUT_R)
         etat_niv_max = GPIO.input(self.NIV_MAX_R)
-        #print("NIV_MIN: {0}".format(etat_niv_min))
-        #print("NIV_BAS: {0}".format(etat_niv_bas))
-        #print("NIV_HAUT: {0}".format(etat_niv_haut))
-        #print("NIV_MAX: {0}".format(etat_niv_max))
         if etat_niv_max:
             return self.MAX
         elif etat_niv_haut:
             return self.HAUT
         elif etat_niv_bas:
-            return self.BAS
-        else:
-            return self.MIN
-        if ((etat_niv_min and not 
-            (etat_niv_bas or etat_niv_haut or etat_niv_max))):
-            return self.BAS
-        elif ((etat_niv_min and etat_niv_bas) and not
-            (etat_niv_haut or etat_niv_max)):
             return self.NORMAL
-        elif ((etat_niv_min and etat_niv_bas and etat_niv_haut) and not
-            etat_niv_max):
-            return self.HAUT
-        elif ((etat_niv_min and etat_niv_bas and
-                etat_niv_haut) and etat_niv_max):
-            return self.MAX
-        elif not (etat_niv_min or etat_niv_bas
-                or etat_niv_haut or etat_niv_max):
-            return self.MIN
+        elif etat_niv_min:
+            return self.BAS
         else:
-            return self.ERREUR
+            return self.MIN
 
 def signal_handler(sig, frame):
         GPIO.cleanup()
