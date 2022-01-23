@@ -164,12 +164,12 @@ class NiveauCtrlCmd:
     def traiter_event_detect_pour_sonde_niveau(self, channel=None):
         
         nouveau_niveau = self.mesurer_niveau()
-        if nouveau_niveau == self.ERREUR:
-            tentatives = 0
-            while nouveau_niveau == self.ERREUR and tentatives < 5:
-                tentatives += 1
-                time.sleep(0.5)
-                nouveau_niveau = self.mesurer_niveau()
+        #if nouveau_niveau == self.ERREUR:
+        #    tentatives = 0
+        #    while nouveau_niveau == self.ERREUR and tentatives < 5:
+        #        tentatives += 1
+        #        time.sleep(0.5)
+        #        nouveau_niveau = self.mesurer_niveau()
             
         if nouveau_niveau != self.NIVEAU and nouveau_niveau != self.ERREUR:
             if nouveau_niveau < self.NIVEAU and nouveau_niveau <= self.BAS:
@@ -178,14 +178,14 @@ class NiveauCtrlCmd:
                 self.fermer_valve()
             self.afficher_niveau(niveau=nouveau_niveau)
             self.alerter_changement_niveau(niveau=nouveau_niveau)
-        elif nouveau_niveau == self.ERREUR:
-            self.alerter_changement_niveau()
+        #elif nouveau_niveau == self.ERREUR:
+        #    self.alerter_changement_niveau()
         self.NIVEAU = nouveau_niveau
             
 
     def mesurer_niveau(self):
         etat_niv_min = GPIO.input(self.NIV_MIN_R)
-        etat_niv_bas = GPIO.input(self.NIV_BAS_R)
+        etat_niv_bas = GPIO.input(self.NIV_BAS_F)
         etat_niv_haut = GPIO.input(self.NIV_HAUT_R)
         etat_niv_max = GPIO.input(self.NIV_MAX_R)
         print("NIV_MIN: {0}".format(etat_niv_min))
