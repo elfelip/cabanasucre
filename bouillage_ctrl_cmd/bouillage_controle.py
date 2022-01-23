@@ -7,6 +7,7 @@ import signal
 import sys
 import time
 from tkinter import N
+from tkinter.font import NORMAL
 import RPi.GPIO as GPIO
 
 class NiveauCtrlCmd:
@@ -113,6 +114,8 @@ class NiveauCtrlCmd:
             print ("Le niveau est sous le niveau minimum.")
         elif niveau == self.BAS:
             print ("Le niveau est bas.")
+        elif niveau == self.NORMAL:
+            print ("Le niveau est normal")
         elif niveau == self.HAUT:
             print ("Le niveau est haut.")
         elif niveau == self.MAX:
@@ -127,6 +130,8 @@ class NiveauCtrlCmd:
             self.lancer_alerte_min()
         elif niveau == self.BAS:
             self.lancer_alerte_bas()
+        elif niveau == self.NORMAL:
+            self.lancer_alerte_normal()
         elif niveau == self.HAUT:
             self.lancer_alerte_haut()
         elif niveau == self.MAX:
