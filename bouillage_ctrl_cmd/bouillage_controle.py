@@ -101,7 +101,7 @@ class NiveauCtrlCmd:
                     connecteur["numero"], 
                     connecteur["detect"],
                     connecteur["callback"]))
-                GPIO.add_event_detect(connecteur["numero"], connecteur["detect"], callback=connecteur["callback"], bouncetime=200)
+                GPIO.add_event_detect(connecteur["numero"], connecteur["detect"], callback=connecteur["callback"], bouncetime=2000)
         self.mesurer_niveau()
         self.afficher_niveau()
 
