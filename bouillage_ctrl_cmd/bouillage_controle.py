@@ -10,10 +10,14 @@ import RPi.GPIO as GPIO
 
 class NiveauCtrlCmd:
 
-    NIV_MIN = 4
-    NIV_BAS = 17
-    NIV_HAUT = 27
-    NIV_MAX = 22
+    NIV_MIN_R = 5
+    NIV_MIN_F = 12
+    NIV_BAS_R = 17
+    NIV_BAS_F = 16
+    NIV_HAUT_R = 27
+    NIV_HAUT_F = 24
+    NIV_MAX_R = 22
+    NIV_MAX_F = 25
     ERREUR = 0
     MIN = 1
     BAS = 2
@@ -21,37 +25,83 @@ class NiveauCtrlCmd:
     HAUT = 4
     MAX = 5
     
+    
+    
     def __init__(self):
+        self.connecteurs = [
+            {
+                "numero": self.NIV_MIN_R,
+                "nom": "NIV_MIN_R",
+                "mode": GPIO.IN,
+                "detect": GPIO.RISING,
+                "callback": self.traiter_gpio_rising_pour_sonde_min
+            },
+            {
+                "numero": self.NIV_MIN_F,
+                "nom": "NIV_MIN_F",
+                "mode": GPIO.IN,
+                "detect": GPIO.FALLING,
+                "callback": self.traiter_gpio_falling_pour_sonde_min
+            },
+            {
+                "numero": self.NIV_BAS_R,
+                "nom": "NIV_BAS_R",
+                "mode": GPIO.IN,
+                "detect": GPIO.RISING,
+                "callback": self.traiter_gpio_rising_pour_sonde_bas
+            },
+            {
+                "numero": self.NIV_BAS_F,
+                "nom": "NIV_BAS_F",
+                "mode": GPIO.IN,
+                "detect": GPIO.FALLING,
+                "callback": self.traiter_gpio_falling_pour_sonde_bas
+            },
+            {
+                "numero": self.NIV_HAUT_R,
+                "nom": "NIV_HAUT_R",
+                "mode": GPIO.IN,
+                "detect": GPIO.RISING,
+                "callback": self.traiter_gpio_rising_pour_sonde_haut
+            },
+            {
+                "numero": self.NIV_HAUT_F,
+                "nom": "NIV_HAUT_F",
+                "mode": GPIO.IN,
+                "detect": GPIO.FALLING,
+                "callback": self.traiter_gpio_falling_pour_sonde_haut
+            },
+            {
+                "numero": self.NIV_MAX_R,
+                "nom": "NIV_MAX_R",
+                "mode": GPIO.IN,
+                "detect": GPIO.RISING,
+                "callback": self.traiter_gpio_rising_pour_sonde_max
+            },
+            {
+                "numero": self.NIV_MAX_F,
+                "nom": "NIV_MAX_F",
+                "mode": GPIO.IN,
+                "detect": GPIO.FALLING,
+                "callback": self.traiter_gpio_falling_pour_sonde_max
+            },
+            
+        ]
         print("setmode: GPIO.BCM: {0}".format(GPIO.BCM))
         GPIO.setmode(GPIO.BCM)
-    
-        connecteurs = [self.NIV_MIN, self.NIV_BAS, self.NIV_HAUT, self.NIV_MAX]
 
-        for connecteur in connecteurs:
+        for connecteur in self.connecteurs:
             print ("setup connecteur {0} mode GPIO.IN: {1} pull_up_down GPIO.PUD_DOWN {2}".format(
-                connecteur, 
-                GPIO.IN,
+                connecteur["numero"], 
+                connecteur["mode"],
                 GPIO.PUD_DOWN))
-            GPIO.setup(connecteur, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-            rising_callback = None
-            falling_callback = None
-            if connecteur == self.NIV_MIN:
-                rising_callback = self.traiter_gpio_rising_pour_sonde_min
-                falling_callback = self.traiter_gpio_falling_pour_sonde_min
-            if connecteur == self.NIV_BAS:
-                rising_callback = self.traiter_gpio_rising_pour_sonde_bas
-                falling_callback = self.traiter_gpio_falling_pour_sonde_bas
-            if connecteur == self.NIV_HAUT:
-                rising_callback = self.traiter_gpio_rising_pour_sonde_haut
-                falling_callback = self.traiter_gpio_falling_pour_sonde_haut
-            if connecteur == self.NIV_MAX:
-                rising_callback = self.traiter_gpio_rising_pour_sonde_max
-                falling_callback = self.traiter_gpio_falling_pour_sonde_max
-            if rising_callback is not None and falling_callback is not None:
-                print ("add_event_detect connecteur: {0}, GPIO.RISING {1}".format(connecteur, GPIO.RISING))
-                GPIO.add_event_detect(connecteur, GPIO.RISING, callback=rising_callback, bouncetime=200)
-                print ("add_event_detect connecteur: {0}, GPIO.FALLING {1}".format(connecteur, GPIO.FALLING))
-                GPIO.add_event_detect(connecteur, GPIO.FALLING, callback=falling_callback, bouncetime=200)
+            GPIO.setup(connecteur["numero"], connecteur["mode"], pull_up_down=GPIO.PUD_DOWN)
+            if connecteur["callback"] is not None:
+                print ("add_event_detect connecteur: {0}, detect {1}, callback : {2}".format(
+                    connecteur["numero"], 
+                    connecteur["detect"],
+                    connecteur["callback"]))
+                GPIO.add_event_detect(connecteur["numero"], connecteur["detect"], callback=connecteur["callback"], bouncetime=200)
         self.mesurer_niveau()
 
     def lancer_alerte_vide(self):
@@ -126,18 +176,20 @@ class NiveauCtrlCmd:
         self.NIVEAU = self.HAUT
 
     def mesurer_niveau(self):
-        if ((GPIO.input(self.NIV_MIN) and not 
-            (GPIO.input(self.NIV_BAS) or GPIO.input(self.NIV_HAUT) or GPIO.input(self.NIV_MAX)))):
+        if ((GPIO.input(self.NIV_MIN_R) and not 
+            (GPIO.input(self.NIV_BAS_R) or GPIO.input(self.NIV_HAUT_R) or GPIO.input(self.NIV_MAX_R)))):
             self.NIVEAU = self.BAS
-        elif ((GPIO.input(self.NIV_MIN) and GPIO.input(self.NIV_BAS)) and not
-            (GPIO.input(self.NIV_HAUT) or GPIO.input(self.NIV_MAX))):
+        elif ((GPIO.input(self.NIV_MIN_R) and GPIO.input(self.NIV_BAS_R)) and not
+            (GPIO.input(self.NIV_HAUT_R) or GPIO.input(self.NIV_MAX_R))):
             self.NIVEAU = self.NORMAL
-        elif ((GPIO.input(self.NIV_MIN) and GPIO.input(self.NIV_BAS) and GPIO.input(self.NIV_HAUT)) and not
-            GPIO.input(self.NIV_MAX)):
+        elif ((GPIO.input(self.NIV_MIN_R) and GPIO.input(self.NIV_BAS_R) and GPIO.input(self.NIV_HAUT_R)) and not
+            GPIO.input(self.NIV_MAX_R)):
             self.NIVEAU = self.HAUT
-        elif (GPIO.input(self.NIV_MIN) and GPIO.input(self.NIV_BAS) and GPIO.input(self.NIV_HAUT)) and GPIO.input(self.NIV_MAX):
+        elif ((GPIO.input(self.NIV_MIN_R) and GPIO.input(self.NIV_BAS_R) and
+                GPIO.input(self.NIV_HAUT_R)) and GPIO.input(self.NIV_MAX_R)):
             self.NIVEAU = self.MAX
-        elif not (GPIO.input(self.NIV_MIN) or GPIO.input(self.NIV_BAS) or GPIO.input(self.NIV_HAUT) or GPIO.input(self.NIV_MAX)):
+        elif not (GPIO.input(self.NIV_MIN_R) or GPIO.input(self.NIV_BAS_R)
+                or GPIO.input(self.NIV_HAUT_R) or GPIO.input(self.NIV_MAX_R)):
             self.NIVEAU = self.MIN
         else:
             self.NIVEAU = self.ERREUR

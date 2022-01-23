@@ -22,17 +22,17 @@ class TestNiveauCtrlCmd(TestCase):
         return False
     
     def gpio_input_bas_mock(*args, **kwargs):
-        if args[0] == 4:
+        if args[0] == 5:
             return True
         return False
     
     def gpio_input_normal_mock(*args, **kwargs):
-        if args[0] == 4 or args[0] == 17:
+        if args[0] == 5 or args[0] == 17:
             return True
         return False
 
     def gpio_input_haut_mock(*args, **kwargs):
-        if args[0] == 4 or args[0] == 17 or args[0] == 27:
+        if args[0] == 5 or args[0] == 17 or args[0] == 27:
             return True
         return False
 
@@ -63,7 +63,7 @@ class TestNiveauCtrlCmd(TestCase):
         *mocks):
 
         controle_niveau = NiveauCtrlCmd()
-        controle_niveau.traiter_gpio_rising_pour_sonde_min(controle_niveau.NIV_MIN)
+        controle_niveau.traiter_gpio_rising_pour_sonde_min(controle_niveau.NIV_MIN_R)
         self.assertEqual(
             controle_niveau.NIVEAU,
             controle_niveau.BAS,
@@ -99,7 +99,7 @@ class TestNiveauCtrlCmd(TestCase):
         *mocks):
     
         controle_niveau = NiveauCtrlCmd()
-        controle_niveau.traiter_gpio_falling_pour_sonde_min(controle_niveau.NIV_MIN)
+        controle_niveau.traiter_gpio_falling_pour_sonde_min(controle_niveau.NIV_MIN_F)
         self.assertEqual(
             controle_niveau.NIVEAU,
             controle_niveau.MIN,
@@ -141,7 +141,7 @@ class TestNiveauCtrlCmd(TestCase):
         *mocks):
 
         controle_niveau = NiveauCtrlCmd()
-        controle_niveau.traiter_gpio_rising_pour_sonde_bas(controle_niveau.NIV_BAS)
+        controle_niveau.traiter_gpio_rising_pour_sonde_bas(controle_niveau.NIV_BAS_R)
         self.assertEqual(
             controle_niveau.NIVEAU,
             controle_niveau.NORMAL,
@@ -176,7 +176,7 @@ class TestNiveauCtrlCmd(TestCase):
         *mocks):
     
         controle_niveau = NiveauCtrlCmd()
-        controle_niveau.traiter_gpio_falling_pour_sonde_bas(controle_niveau.NIV_BAS)
+        controle_niveau.traiter_gpio_falling_pour_sonde_bas(controle_niveau.NIV_BAS_F)
         self.assertEqual(
             controle_niveau.NIVEAU,
             controle_niveau.BAS,
@@ -212,7 +212,7 @@ class TestNiveauCtrlCmd(TestCase):
         *mocks):
 
         controle_niveau = NiveauCtrlCmd()
-        controle_niveau.traiter_gpio_rising_pour_sonde_haut(controle_niveau.NIV_HAUT)
+        controle_niveau.traiter_gpio_rising_pour_sonde_haut(controle_niveau.NIV_HAUT_R)
         self.assertEqual(
             controle_niveau.NIVEAU,
             controle_niveau.HAUT,
@@ -247,7 +247,7 @@ class TestNiveauCtrlCmd(TestCase):
         *mocks):
     
         controle_niveau = NiveauCtrlCmd()
-        controle_niveau.traiter_gpio_falling_pour_sonde_haut(controle_niveau.NIV_HAUT)
+        controle_niveau.traiter_gpio_falling_pour_sonde_haut(controle_niveau.NIV_HAUT_F)
         self.assertEqual(
             controle_niveau.NIVEAU,
             controle_niveau.NORMAL,
@@ -284,7 +284,7 @@ class TestNiveauCtrlCmd(TestCase):
         *mocks):
 
         controle_niveau = NiveauCtrlCmd()
-        controle_niveau.traiter_gpio_rising_pour_sonde_max(controle_niveau.NIV_MAX)
+        controle_niveau.traiter_gpio_rising_pour_sonde_max(controle_niveau.NIV_MAX_R)
         self.assertEqual(
             controle_niveau.NIVEAU,
             controle_niveau.MAX,
@@ -325,7 +325,7 @@ class TestNiveauCtrlCmd(TestCase):
         *mocks):
     
         controle_niveau = NiveauCtrlCmd()
-        controle_niveau.traiter_gpio_falling_pour_sonde_max(controle_niveau.NIV_HAUT)
+        controle_niveau.traiter_gpio_falling_pour_sonde_max(controle_niveau.NIV_MAX_F)
         self.assertEqual(
             controle_niveau.NIVEAU,
             controle_niveau.HAUT,
