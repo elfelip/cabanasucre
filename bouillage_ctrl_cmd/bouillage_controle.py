@@ -6,6 +6,7 @@ from logging.config import valid_ident
 import signal
 import sys
 import time
+from tkinter import N
 import RPi.GPIO as GPIO
 
 class NiveauCtrlCmd:
@@ -34,56 +35,56 @@ class NiveauCtrlCmd:
                 "nom": "NIV_MIN_R",
                 "mode": GPIO.IN,
                 "detect": GPIO.RISING,
-                "callback": self.traiter_gpio_rising_pour_sonde_min
+                "callback": self.traiter_event_detect_pour_sonde_niveau
             },
             {
                 "numero": self.NIV_MIN_F,
                 "nom": "NIV_MIN_F",
                 "mode": GPIO.IN,
                 "detect": GPIO.FALLING,
-                "callback": self.traiter_gpio_falling_pour_sonde_min
+                "callback": self.traiter_event_detect_pour_sonde_niveau
             },
             {
                 "numero": self.NIV_BAS_R,
                 "nom": "NIV_BAS_R",
                 "mode": GPIO.IN,
                 "detect": GPIO.RISING,
-                "callback": self.traiter_gpio_rising_pour_sonde_bas
+                "callback": self.traiter_event_detect_pour_sonde_niveau
             },
             {
                 "numero": self.NIV_BAS_F,
                 "nom": "NIV_BAS_F",
                 "mode": GPIO.IN,
                 "detect": GPIO.FALLING,
-                "callback": self.traiter_gpio_falling_pour_sonde_bas
+                "callback": self.traiter_event_detect_pour_sonde_niveau
             },
             {
                 "numero": self.NIV_HAUT_R,
                 "nom": "NIV_HAUT_R",
                 "mode": GPIO.IN,
                 "detect": GPIO.RISING,
-                "callback": self.traiter_gpio_rising_pour_sonde_haut
+                "callback": self.traiter_event_detect_pour_sonde_niveau
             },
             {
                 "numero": self.NIV_HAUT_F,
                 "nom": "NIV_HAUT_F",
                 "mode": GPIO.IN,
                 "detect": GPIO.FALLING,
-                "callback": self.traiter_gpio_falling_pour_sonde_haut
+                "callback": self.traiter_event_detect_pour_sonde_niveau
             },
             {
                 "numero": self.NIV_MAX_R,
                 "nom": "NIV_MAX_R",
                 "mode": GPIO.IN,
                 "detect": GPIO.RISING,
-                "callback": self.traiter_gpio_rising_pour_sonde_max
+                "callback": self.traiter_event_detect_pour_sonde_niveau
             },
             {
                 "numero": self.NIV_MAX_F,
                 "nom": "NIV_MAX_F",
                 "mode": GPIO.IN,
                 "detect": GPIO.FALLING,
-                "callback": self.traiter_gpio_falling_pour_sonde_max
+                "callback": self.traiter_event_detect_pour_sonde_niveau
             },
             
         ]
@@ -102,21 +103,37 @@ class NiveauCtrlCmd:
                     connecteur["detect"],
                     connecteur["callback"]))
                 GPIO.add_event_detect(connecteur["numero"], connecteur["detect"], callback=connecteur["callback"], bouncetime=2000)
-        self.mesurer_niveau()
+        self.NIVEAU = self.mesurer_niveau()
         self.afficher_niveau()
 
-    def afficher_niveau(self):
-        if self.NIVEAU == self.MIN:
+    def afficher_niveau(self, niveau=None):
+        if niveau is None:
+            niveau = self.NIVEAU
+        if niveau == self.MIN:
             print ("Le niveau est sous le niveau minimum.")
-        elif self.NIVEAU == self.BAS:
+        elif niveau == self.BAS:
             print ("Le niveau est bas.")
-        elif self.NIVEAU == self.HAUT:
+        elif niveau == self.HAUT:
             print ("Le niveau est haut.")
-        elif self.NIVEAU == self.MAX:
+        elif niveau == self.MAX:
             print ("Le niveau est au dessus du niveau maximum.")
         else:
             print ("Le niveau est inconnu, verifier le systeme.")
             
+    def alerter_changement_niveau(self, niveau=None):
+        if niveau is None:
+            niveau = self.NIVEAU
+        if niveau == self.MIN:
+            self.lancer_alerte_min()
+        elif niveau == self.BAS:
+            self.lancer_alerte_bas()
+        elif niveau == self.HAUT:
+            self.lancer_alerte_haut()
+        elif niveau == self.MAX:
+            self.lancer_alerte_max()
+        else:
+            self.lancer_erreur_niveau()
+
     def lancer_alerte_vide(self):
         print("Alerte, Le chaudron est vide.")
 
@@ -144,68 +161,38 @@ class NiveauCtrlCmd:
     def lancer_erreur_niveau(self):
         print("Alerte Les informations de niveau sont incoherents. Il doit y avoir un probleme avec la sonde.")
 
-    def traiter_gpio_rising_pour_sonde_min(self, channel=None):
-        if self.NIVEAU != self.BAS:
-            self.lancer_alerte_bas()
-        self.NIVEAU = self.BAS
-    
-    def traiter_gpio_falling_pour_sonde_min(self, channel=None):
-        if self.NIVEAU != self.MIN:
-            self.ouvrir_valve()
-            self.lancer_alerte_min()
-        self.NIVEAU = self.MIN
-
-    def traiter_gpio_rising_pour_sonde_bas(self, channel=None):
-        if self.NIVEAU != self.NORMAL:
-            self.lancer_alerte_normal()
-        self.NIVEAU = self.NORMAL
-    
-    def traiter_gpio_falling_pour_sonde_bas(self, channel=None):
-        if self.NIVEAU != self.BAS:
-            self.ouvrir_valve()
-            self.lancer_alerte_min()
-        self.NIVEAU = self.BAS
-
-    def traiter_gpio_rising_pour_sonde_haut(self, channel=None):
-        if self.NIVEAU != self.HAUT:
-            self.fermer_valve()
-            self.lancer_alerte_haut()
-        self.NIVEAU = self.HAUT
-    
-    def traiter_gpio_falling_pour_sonde_haut(self, channel=None):
-        if self.NIVEAU != self.NORMAL:
-            self.lancer_alerte_normal()
-        self.NIVEAU = self.NORMAL
-
-    def traiter_gpio_rising_pour_sonde_max(self, channel=None):
-        if self.NIVEAU != self.MAX:
-            self.fermer_valve()
-            self.lancer_alerte_max()
-        self.NIVEAU = self.MAX
-    
-    def traiter_gpio_falling_pour_sonde_max(self, channel=None):
-        if self.NIVEAU != self.HAUT:
-            self.lancer_alerte_haut()
-        self.NIVEAU = self.HAUT
+    def traiter_event_detect_pour_sonde_niveau(self, channel=None):
+        nouveau_niveau = self.mesurer_niveau()
+        if nouveau_niveau != self.NIVEAU and nouveau_niveau != self.ERREUR:
+            if nouveau_niveau < self.NIVEAU and nouveau_niveau <= self.BAS:
+                self.ouvrir_valve()
+            elif nouveau_niveau > self.NIVEAU and nouveau_niveau >= self.HAUT:
+                self.fermer_valve()
+            self.afficher_niveau(niveau=nouveau_niveau)
+            self.alerter_changement_niveau(niveau=nouveau_niveau)
+        elif nouveau_niveau == self.ERREUR:
+            self.alerter_changement_niveau()
+        self.NIVEAU = nouveau_niveau
+            
 
     def mesurer_niveau(self):
         if ((GPIO.input(self.NIV_MIN_R) and not 
             (GPIO.input(self.NIV_BAS_R) or GPIO.input(self.NIV_HAUT_R) or GPIO.input(self.NIV_MAX_R)))):
-            self.NIVEAU = self.BAS
+            return self.BAS
         elif ((GPIO.input(self.NIV_MIN_R) and GPIO.input(self.NIV_BAS_R)) and not
             (GPIO.input(self.NIV_HAUT_R) or GPIO.input(self.NIV_MAX_R))):
-            self.NIVEAU = self.NORMAL
+            return self.NORMAL
         elif ((GPIO.input(self.NIV_MIN_R) and GPIO.input(self.NIV_BAS_R) and GPIO.input(self.NIV_HAUT_R)) and not
             GPIO.input(self.NIV_MAX_R)):
-            self.NIVEAU = self.HAUT
+            return self.HAUT
         elif ((GPIO.input(self.NIV_MIN_R) and GPIO.input(self.NIV_BAS_R) and
                 GPIO.input(self.NIV_HAUT_R)) and GPIO.input(self.NIV_MAX_R)):
-            self.NIVEAU = self.MAX
+            return self.MAX
         elif not (GPIO.input(self.NIV_MIN_R) or GPIO.input(self.NIV_BAS_R)
                 or GPIO.input(self.NIV_HAUT_R) or GPIO.input(self.NIV_MAX_R)):
-            self.NIVEAU = self.MIN
+            return self.MIN
         else:
-            self.NIVEAU = self.ERREUR
+            return self.ERREUR
 
 def signal_handler(sig, frame):
         GPIO.cleanup()

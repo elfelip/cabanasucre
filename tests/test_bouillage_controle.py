@@ -55,7 +55,7 @@ class TestNiveauCtrlCmd(TestCase):
     @mock.patch('RPi.GPIO.setmode', side_effect=gpio_setmode_mock)
     @mock.patch('RPi.GPIO.setup', side_effect=gpio_setup_mock)
     @mock.patch('RPi.GPIO.add_event_detect', side_effect=gpio_add_event_detect_mock)
-    @mock.patch('RPi.GPIO.input', side_effect=gpio_input_min_mock)
+    @mock.patch('RPi.GPIO.input', side_effect=gpio_input_bas_mock)
     @mock.patch('bouillage_ctrl_cmd.bouillage_controle.NiveauCtrlCmd.ouvrir_valve', side_effect=ouvrir_valve_mock)
     @mock.patch('bouillage_ctrl_cmd.bouillage_controle.NiveauCtrlCmd.fermer_valve', side_effect=fermer_valve_mock)
     def test_etant_donne_niveau_min_si_la_sonde_de_niveau_min_est_touchee_par_l_eau_alors_le_niveau_est_bas(
@@ -63,7 +63,8 @@ class TestNiveauCtrlCmd(TestCase):
         *mocks):
 
         controle_niveau = NiveauCtrlCmd()
-        controle_niveau.traiter_gpio_rising_pour_sonde_min(controle_niveau.NIV_MIN_R)
+        controle_niveau.NIVEAU = controle_niveau.MIN
+        controle_niveau.traiter_event_detect_pour_sonde_niveau(controle_niveau.NIV_MIN_R)
         self.assertEqual(
             controle_niveau.NIVEAU,
             controle_niveau.BAS,
@@ -90,7 +91,7 @@ class TestNiveauCtrlCmd(TestCase):
     @mock.patch('RPi.GPIO.setmode', side_effect=gpio_setmode_mock)
     @mock.patch('RPi.GPIO.setup', side_effect=gpio_setup_mock)
     @mock.patch('RPi.GPIO.add_event_detect', side_effect=gpio_add_event_detect_mock)
-    @mock.patch('RPi.GPIO.input', side_effect=gpio_input_bas_mock)
+    @mock.patch('RPi.GPIO.input', side_effect=gpio_input_min_mock)
     @mock.patch('bouillage_ctrl_cmd.bouillage_controle.NiveauCtrlCmd.ouvrir_valve', side_effect=ouvrir_valve_mock)
     @mock.patch('bouillage_ctrl_cmd.bouillage_controle.NiveauCtrlCmd.fermer_valve', side_effect=fermer_valve_mock)
     @mock.patch('bouillage_ctrl_cmd.bouillage_controle.NiveauCtrlCmd.lancer_alerte_min', side_effect=lancer_alerte_min_mock)
@@ -99,7 +100,8 @@ class TestNiveauCtrlCmd(TestCase):
         *mocks):
     
         controle_niveau = NiveauCtrlCmd()
-        controle_niveau.traiter_gpio_falling_pour_sonde_min(controle_niveau.NIV_MIN_F)
+        controle_niveau.NIVEAU = controle_niveau.BAS
+        controle_niveau.traiter_event_detect_pour_sonde_niveau(controle_niveau.NIV_MIN_F)
         self.assertEqual(
             controle_niveau.NIVEAU,
             controle_niveau.MIN,
@@ -133,7 +135,7 @@ class TestNiveauCtrlCmd(TestCase):
     @mock.patch('RPi.GPIO.setmode', side_effect=gpio_setmode_mock)
     @mock.patch('RPi.GPIO.setup', side_effect=gpio_setup_mock)
     @mock.patch('RPi.GPIO.add_event_detect', side_effect=gpio_add_event_detect_mock)
-    @mock.patch('RPi.GPIO.input', side_effect=gpio_input_bas_mock)
+    @mock.patch('RPi.GPIO.input', side_effect=gpio_input_normal_mock)
     @mock.patch('bouillage_ctrl_cmd.bouillage_controle.NiveauCtrlCmd.ouvrir_valve', side_effect=ouvrir_valve_mock)
     @mock.patch('bouillage_ctrl_cmd.bouillage_controle.NiveauCtrlCmd.fermer_valve', side_effect=fermer_valve_mock)
     def test_etant_donne_niveau_bas_si_la_sonde_de_niveau_bas_est_touchee_par_l_eau_alors_le_niveau_est_normal(
@@ -141,7 +143,8 @@ class TestNiveauCtrlCmd(TestCase):
         *mocks):
 
         controle_niveau = NiveauCtrlCmd()
-        controle_niveau.traiter_gpio_rising_pour_sonde_bas(controle_niveau.NIV_BAS_R)
+        controle_niveau.NIVEAU = controle_niveau.BAS
+        controle_niveau.traiter_event_detect_pour_sonde_niveau(controle_niveau.NIV_BAS_R)
         self.assertEqual(
             controle_niveau.NIVEAU,
             controle_niveau.NORMAL,
@@ -168,7 +171,7 @@ class TestNiveauCtrlCmd(TestCase):
     @mock.patch('RPi.GPIO.setmode', side_effect=gpio_setmode_mock)
     @mock.patch('RPi.GPIO.setup', side_effect=gpio_setup_mock)
     @mock.patch('RPi.GPIO.add_event_detect', side_effect=gpio_add_event_detect_mock)
-    @mock.patch('RPi.GPIO.input', side_effect=gpio_input_normal_mock)
+    @mock.patch('RPi.GPIO.input', side_effect=gpio_input_bas_mock)
     @mock.patch('bouillage_ctrl_cmd.bouillage_controle.NiveauCtrlCmd.ouvrir_valve', side_effect=ouvrir_valve_mock)
     @mock.patch('bouillage_ctrl_cmd.bouillage_controle.NiveauCtrlCmd.fermer_valve', side_effect=fermer_valve_mock)
     def test_etant_donne_niveau_normal_si_la_sonde_bas_n_est_plus_touchee_par_l_eau_alors_niveau_bas_et_valve_ouverte(
@@ -176,7 +179,8 @@ class TestNiveauCtrlCmd(TestCase):
         *mocks):
     
         controle_niveau = NiveauCtrlCmd()
-        controle_niveau.traiter_gpio_falling_pour_sonde_bas(controle_niveau.NIV_BAS_F)
+        controle_niveau.NIVEAU = controle_niveau.NORMAL
+        controle_niveau.traiter_event_detect_pour_sonde_niveau(controle_niveau.NIV_BAS_F)
         self.assertEqual(
             controle_niveau.NIVEAU,
             controle_niveau.BAS,
@@ -204,7 +208,7 @@ class TestNiveauCtrlCmd(TestCase):
     @mock.patch('RPi.GPIO.setmode', side_effect=gpio_setmode_mock)
     @mock.patch('RPi.GPIO.setup', side_effect=gpio_setup_mock)
     @mock.patch('RPi.GPIO.add_event_detect', side_effect=gpio_add_event_detect_mock)
-    @mock.patch('RPi.GPIO.input', side_effect=gpio_input_normal_mock)
+    @mock.patch('RPi.GPIO.input', side_effect=gpio_input_haut_mock)
     @mock.patch('bouillage_ctrl_cmd.bouillage_controle.NiveauCtrlCmd.ouvrir_valve', side_effect=ouvrir_valve_mock)
     @mock.patch('bouillage_ctrl_cmd.bouillage_controle.NiveauCtrlCmd.fermer_valve', side_effect=fermer_valve_mock)
     def test_etant_donne_niveau_normal_si_la_sonde_de_niveau_haut_est_touchee_par_l_eau_alors_le_niveau_est_haut_et_fermer_valve(
@@ -212,7 +216,8 @@ class TestNiveauCtrlCmd(TestCase):
         *mocks):
 
         controle_niveau = NiveauCtrlCmd()
-        controle_niveau.traiter_gpio_rising_pour_sonde_haut(controle_niveau.NIV_HAUT_R)
+        controle_niveau.NIVEAU = controle_niveau.NORMAL
+        controle_niveau.traiter_event_detect_pour_sonde_niveau(controle_niveau.NIV_HAUT_R)
         self.assertEqual(
             controle_niveau.NIVEAU,
             controle_niveau.HAUT,
@@ -239,7 +244,7 @@ class TestNiveauCtrlCmd(TestCase):
     @mock.patch('RPi.GPIO.setmode', side_effect=gpio_setmode_mock)
     @mock.patch('RPi.GPIO.setup', side_effect=gpio_setup_mock)
     @mock.patch('RPi.GPIO.add_event_detect', side_effect=gpio_add_event_detect_mock)
-    @mock.patch('RPi.GPIO.input', side_effect=gpio_input_haut_mock)
+    @mock.patch('RPi.GPIO.input', side_effect=gpio_input_normal_mock)
     @mock.patch('bouillage_ctrl_cmd.bouillage_controle.NiveauCtrlCmd.ouvrir_valve', side_effect=ouvrir_valve_mock)
     @mock.patch('bouillage_ctrl_cmd.bouillage_controle.NiveauCtrlCmd.fermer_valve', side_effect=fermer_valve_mock)
     def test_etant_donne_niveau_haut_si_la_sonde_haut_n_est_plus_touchee_par_l_eau_alors_niveau_normal(
@@ -247,7 +252,8 @@ class TestNiveauCtrlCmd(TestCase):
         *mocks):
     
         controle_niveau = NiveauCtrlCmd()
-        controle_niveau.traiter_gpio_falling_pour_sonde_haut(controle_niveau.NIV_HAUT_F)
+        controle_niveau.NIVEAU = controle_niveau.HAUT
+        controle_niveau.traiter_event_detect_pour_sonde_niveau(controle_niveau.NIV_HAUT_F)
         self.assertEqual(
             controle_niveau.NIVEAU,
             controle_niveau.NORMAL,
@@ -275,7 +281,7 @@ class TestNiveauCtrlCmd(TestCase):
     @mock.patch('RPi.GPIO.setmode', side_effect=gpio_setmode_mock)
     @mock.patch('RPi.GPIO.setup', side_effect=gpio_setup_mock)
     @mock.patch('RPi.GPIO.add_event_detect', side_effect=gpio_add_event_detect_mock)
-    @mock.patch('RPi.GPIO.input', side_effect=gpio_input_haut_mock)
+    @mock.patch('RPi.GPIO.input', side_effect=gpio_input_max_mock)
     @mock.patch('bouillage_ctrl_cmd.bouillage_controle.NiveauCtrlCmd.ouvrir_valve', side_effect=ouvrir_valve_mock)
     @mock.patch('bouillage_ctrl_cmd.bouillage_controle.NiveauCtrlCmd.fermer_valve', side_effect=fermer_valve_mock)
     @mock.patch('bouillage_ctrl_cmd.bouillage_controle.NiveauCtrlCmd.lancer_alerte_max', side_effect=lancer_alerte_max_mock)
@@ -284,7 +290,8 @@ class TestNiveauCtrlCmd(TestCase):
         *mocks):
 
         controle_niveau = NiveauCtrlCmd()
-        controle_niveau.traiter_gpio_rising_pour_sonde_max(controle_niveau.NIV_MAX_R)
+        controle_niveau.NIVEAU = controle_niveau.HAUT
+        controle_niveau.traiter_event_detect_pour_sonde_niveau(controle_niveau.NIV_MAX_R)
         self.assertEqual(
             controle_niveau.NIVEAU,
             controle_niveau.MAX,
@@ -317,7 +324,7 @@ class TestNiveauCtrlCmd(TestCase):
     @mock.patch('RPi.GPIO.setmode', side_effect=gpio_setmode_mock)
     @mock.patch('RPi.GPIO.setup', side_effect=gpio_setup_mock)
     @mock.patch('RPi.GPIO.add_event_detect', side_effect=gpio_add_event_detect_mock)
-    @mock.patch('RPi.GPIO.input', side_effect=gpio_input_max_mock)
+    @mock.patch('RPi.GPIO.input', side_effect=gpio_input_haut_mock)
     @mock.patch('bouillage_ctrl_cmd.bouillage_controle.NiveauCtrlCmd.ouvrir_valve', side_effect=ouvrir_valve_mock)
     @mock.patch('bouillage_ctrl_cmd.bouillage_controle.NiveauCtrlCmd.fermer_valve', side_effect=fermer_valve_mock)
     def test_etant_donne_niveau_max_si_la_sonde_max_n_est_plus_touchee_par_l_eau_alors_niveau_haut(
@@ -325,7 +332,8 @@ class TestNiveauCtrlCmd(TestCase):
         *mocks):
     
         controle_niveau = NiveauCtrlCmd()
-        controle_niveau.traiter_gpio_falling_pour_sonde_max(controle_niveau.NIV_MAX_F)
+        controle_niveau.NIVEAU = controle_niveau.MAX
+        controle_niveau.traiter_event_detect_pour_sonde_niveau(controle_niveau.NIV_MAX_F)
         self.assertEqual(
             controle_niveau.NIVEAU,
             controle_niveau.HAUT,
