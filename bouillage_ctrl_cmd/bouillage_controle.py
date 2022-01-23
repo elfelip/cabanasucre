@@ -1,13 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-
-from logging.config import valid_ident
 import signal
 import sys
-import time
-from tkinter import N
-from tkinter.font import NORMAL
+
 import RPi.GPIO as GPIO
 
 class NiveauCtrlCmd:
@@ -26,8 +22,6 @@ class NiveauCtrlCmd:
     NORMAL = 3
     HAUT = 4
     MAX = 5
-    
-    
     
     def __init__(self):
         self.connecteurs = [
@@ -167,15 +161,8 @@ class NiveauCtrlCmd:
         print("Alerte Les informations de niveau sont incoherents. Il doit y avoir un probleme avec la sonde.")
 
     def traiter_event_detect_pour_sonde_niveau(self, channel=None):
-        
         nouveau_niveau = self.mesurer_niveau()
-        #if nouveau_niveau == self.ERREUR:
-        #    tentatives = 0
-        #    while nouveau_niveau == self.ERREUR and tentatives < 5:
-        #        tentatives += 1
-        #        time.sleep(0.5)
-        #        nouveau_niveau = self.mesurer_niveau()
-            
+
         if nouveau_niveau != self.NIVEAU and nouveau_niveau != self.ERREUR:
             if nouveau_niveau < self.NIVEAU and nouveau_niveau <= self.BAS:
                 self.ouvrir_valve()
@@ -183,8 +170,6 @@ class NiveauCtrlCmd:
                 self.fermer_valve()
             self.afficher_niveau(niveau=nouveau_niveau)
             self.alerter_changement_niveau(niveau=nouveau_niveau)
-        #elif nouveau_niveau == self.ERREUR:
-        #    self.alerter_changement_niveau()
         self.NIVEAU = nouveau_niveau
             
 
