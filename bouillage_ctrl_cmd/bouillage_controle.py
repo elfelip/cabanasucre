@@ -103,18 +103,31 @@ class NiveauCtrlCmd:
                     connecteur["callback"]))
                 GPIO.add_event_detect(connecteur["numero"], connecteur["detect"], callback=connecteur["callback"], bouncetime=200)
         self.mesurer_niveau()
+        self.afficher_niveau()
 
+    def afficher_niveau(self):
+        if self.NIVEAU == self.MIN:
+            print ("Le niveau est sous le niveau minimum.")
+        elif self.NIVEAU == self.BAS:
+            print ("Le niveau est bas.")
+        elif self.NIVEAU == self.HAUT:
+            print ("Le niveau est haut.")
+        elif self.NIVEAU == self.MAX:
+            print ("Le niveau est au dessus du niveau maximum.")
+        else:
+            print ("Le niveau est inconnu, verifier le systeme.")
+            
     def lancer_alerte_vide(self):
         print("Alerte, Le chaudron est vide.")
 
     def lancer_alerte_min(self):
-        print("Le reservoir est au niveau minimum.")
+        print("Alerte, Le reservoir est au niveau minimum.")
 
     def lancer_alerte_bas(self):
-        print("Le reservoir est bas.")
+        print("Alerte, Le reservoir est bas.")
         
     def lancer_alerte_normal(self):
-        print("Le niveau du reservoir est normal pour le bouillage")
+        print("Alerte, Le niveau du reservoir est normal pour le bouillage")
         
     def ouvrir_valve(self):
         print("Ouvrir la valve pour ajouter de l'eau.")
@@ -129,7 +142,7 @@ class NiveauCtrlCmd:
         print("Alerte, le niveau maiximal est atteint, il y a probablement un probleme avec la valve.")    
 
     def lancer_erreur_niveau(self):
-        print("Les informations de niveau sont incoherents. Il doit y avoir un probleme avec la sonde.")
+        print("Alerte Les informations de niveau sont incoherents. Il doit y avoir un probleme avec la sonde.")
 
     def traiter_gpio_rising_pour_sonde_min(self, channel=None):
         if self.NIVEAU != self.BAS:
