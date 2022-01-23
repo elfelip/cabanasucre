@@ -162,8 +162,15 @@ class NiveauCtrlCmd:
         print("Alerte Les informations de niveau sont incoherents. Il doit y avoir un probleme avec la sonde.")
 
     def traiter_event_detect_pour_sonde_niveau(self, channel=None):
-        time.sleep(0.5)
+        
         nouveau_niveau = self.mesurer_niveau()
+        if nouveau_niveau == self.ERREUR:
+            tentatives = 0
+            while nouveau_niveau == self.ERREUR and tentatives < 5:
+                tentatives += 1
+                time.sleep(0.5)
+                nouveau_niveau = self.mesurer_niveau()
+            
         if nouveau_niveau != self.NIVEAU and nouveau_niveau != self.ERREUR:
             if nouveau_niveau < self.NIVEAU and nouveau_niveau <= self.BAS:
                 self.ouvrir_valve()
