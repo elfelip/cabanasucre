@@ -185,7 +185,7 @@ class NiveauCtrlCmd:
 
     def mesurer_niveau(self):
         etat_niv_min = GPIO.input(self.NIV_MIN_R)
-        etat_niv_bas = GPIO.input(self.NIV_BAS_F)
+        etat_niv_bas = GPIO.input(self.NIV_BAS_R)
         etat_niv_haut = GPIO.input(self.NIV_HAUT_R)
         etat_niv_max = GPIO.input(self.NIV_MAX_R)
         print("NIV_MIN: {0}".format(etat_niv_min))
