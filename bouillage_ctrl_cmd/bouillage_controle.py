@@ -177,20 +177,28 @@ class NiveauCtrlCmd:
             
 
     def mesurer_niveau(self):
-        if ((GPIO.input(self.NIV_MIN_R) and not 
-            (GPIO.input(self.NIV_BAS_R) or GPIO.input(self.NIV_HAUT_R) or GPIO.input(self.NIV_MAX_R)))):
+        etat_niv_min = GPIO.input(self.NIV_MIN_R)
+        etat_niv_bas = GPIO.input(self.NIV_BAS_R)
+        etat_niv_haut = GPIO.input(self.NIV_HAUT_R)
+        etat_niv_max = GPIO.input(self.NIV_MAX_R)
+        print("NIV_MIN: {0}".format(etat_niv_min))
+        print("NIV_BAS: {0}".format(etat_niv_bas))
+        print("NIV_HAUT: {0}".format(etat_niv_haut))
+        print("NIV_MAX: {0}".format(etat_niv_max))
+        if ((etat_niv_min and not 
+            (etat_niv_bas or etat_niv_haut or etat_niv_max))):
             return self.BAS
-        elif ((GPIO.input(self.NIV_MIN_R) and GPIO.input(self.NIV_BAS_R)) and not
-            (GPIO.input(self.NIV_HAUT_R) or GPIO.input(self.NIV_MAX_R))):
+        elif ((etat_niv_min and etat_niv_bas) and not
+            (etat_niv_haut or etat_niv_max)):
             return self.NORMAL
-        elif ((GPIO.input(self.NIV_MIN_R) and GPIO.input(self.NIV_BAS_R) and GPIO.input(self.NIV_HAUT_R)) and not
-            GPIO.input(self.NIV_MAX_R)):
+        elif ((etat_niv_min and etat_niv_bas and etat_niv_haut) and not
+            etat_niv_max):
             return self.HAUT
-        elif ((GPIO.input(self.NIV_MIN_R) and GPIO.input(self.NIV_BAS_R) and
-                GPIO.input(self.NIV_HAUT_R)) and GPIO.input(self.NIV_MAX_R)):
+        elif ((etat_niv_min and etat_niv_bas and
+                etat_niv_haut) and etat_niv_max):
             return self.MAX
-        elif not (GPIO.input(self.NIV_MIN_R) or GPIO.input(self.NIV_BAS_R)
-                or GPIO.input(self.NIV_HAUT_R) or GPIO.input(self.NIV_MAX_R)):
+        elif not (etat_niv_min or etat_niv_bas
+                or etat_niv_haut or etat_niv_max):
             return self.MIN
         else:
             return self.ERREUR
