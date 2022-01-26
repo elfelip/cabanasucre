@@ -3,7 +3,7 @@
 
 import signal
 import sys
-
+import time
 import RPi.GPIO as GPIO
 
 class NiveauCtrlCmd:
@@ -16,90 +16,122 @@ class NiveauCtrlCmd:
     NIV_HAUT_F = 24
     NIV_MAX_R = 22
     NIV_MAX_F = 25
+    FERMER_VALVE = 16
+    OUVRIR_VALVE = 26
     ERREUR = 0
     MIN = 1
     BAS = 2
     NORMAL = 3
     HAUT = 4
     MAX = 5
+    temps_signal_valve = 3
     
     def __init__(self):
+        self.valve_en_action = False
+        self.valve_ouverte = False
         self.connecteurs = [
             {
                 "numero": self.NIV_MIN_R,
                 "nom": "NIV_MIN_R",
                 "mode": GPIO.IN,
                 "detect": GPIO.RISING,
-                "callback": self.traiter_event_detect_pour_sonde_niveau
+                "callback": self.traiter_event_detect_pour_sonde_niveau,
+                "pull_up_down": GPIO.PUD_DOWN
             },
             {
                 "numero": self.NIV_MIN_F,
                 "nom": "NIV_MIN_F",
                 "mode": GPIO.IN,
                 "detect": GPIO.FALLING,
-                "callback": self.traiter_event_detect_pour_sonde_niveau
+                "callback": self.traiter_event_detect_pour_sonde_niveau,
+                "pull_up_down": GPIO.PUD_DOWN
             },
             {
                 "numero": self.NIV_BAS_R,
                 "nom": "NIV_BAS_R",
                 "mode": GPIO.IN,
                 "detect": GPIO.RISING,
-                "callback": self.traiter_event_detect_pour_sonde_niveau
+                "callback": self.traiter_event_detect_pour_sonde_niveau,
+                "pull_up_down": GPIO.PUD_DOWN
             },
             {
                 "numero": self.NIV_BAS_F,
                 "nom": "NIV_BAS_F",
                 "mode": GPIO.IN,
                 "detect": GPIO.FALLING,
-                "callback": self.traiter_event_detect_pour_sonde_niveau
+                "callback": self.traiter_event_detect_pour_sonde_niveau,
+                "pull_up_down": GPIO.PUD_DOWN
             },
             {
                 "numero": self.NIV_HAUT_R,
                 "nom": "NIV_HAUT_R",
                 "mode": GPIO.IN,
                 "detect": GPIO.RISING,
-                "callback": self.traiter_event_detect_pour_sonde_niveau
+                "callback": self.traiter_event_detect_pour_sonde_niveau,
+                "pull_up_down": GPIO.PUD_DOWN
             },
             {
                 "numero": self.NIV_HAUT_F,
                 "nom": "NIV_HAUT_F",
                 "mode": GPIO.IN,
                 "detect": GPIO.FALLING,
-                "callback": self.traiter_event_detect_pour_sonde_niveau
+                "callback": self.traiter_event_detect_pour_sonde_niveau,
+                "pull_up_down": GPIO.PUD_DOWN
             },
             {
                 "numero": self.NIV_MAX_R,
                 "nom": "NIV_MAX_R",
                 "mode": GPIO.IN,
                 "detect": GPIO.RISING,
-                "callback": self.traiter_event_detect_pour_sonde_niveau
+                "callback": self.traiter_event_detect_pour_sonde_niveau,
+                "pull_up_down": GPIO.PUD_DOWN
             },
             {
                 "numero": self.NIV_MAX_F,
                 "nom": "NIV_MAX_F",
                 "mode": GPIO.IN,
                 "detect": GPIO.FALLING,
-                "callback": self.traiter_event_detect_pour_sonde_niveau
+                "callback": self.traiter_event_detect_pour_sonde_niveau,
+                "pull_up_down": GPIO.PUD_DOWN
             },
-            
+            {
+                "numero": self.OUVRIR_VALVE,
+                "nom": "OUVRIR_VALVE",
+                "mode": GPIO.OUT,
+                "initial": GPIO.LOW
+            },
+            {
+                "numero": self.FERMER_VALVE,
+                "nom": "FERMER_VALVE",
+                "mode": GPIO.OUT,
+                "initial": GPIO.LOW
+            }
         ]
         print("setmode: GPIO.BCM: {0}".format(GPIO.BCM))
         GPIO.setmode(GPIO.BCM)
 
         for connecteur in self.connecteurs:
-            print ("setup connecteur {0} mode GPIO.IN: {1} pull_up_down GPIO.PUD_DOWN {2}".format(
+            print ("setup connecteur {0} mode: {1}".format(
                 connecteur["numero"], 
-                connecteur["mode"],
-                GPIO.PUD_DOWN))
-            GPIO.setup(connecteur["numero"], connecteur["mode"], pull_up_down=GPIO.PUD_DOWN)
-            if connecteur["callback"] is not None:
-                print ("add_event_detect connecteur: {0}, detect {1}, callback : {2}".format(
-                    connecteur["numero"], 
-                    connecteur["detect"],
-                    connecteur["callback"]))
-                GPIO.add_event_detect(connecteur["numero"], connecteur["detect"], callback=connecteur["callback"], bouncetime=200)
+                connecteur["mode"]))
+            if connecteur["mode"] == GPIO.IN:
+                pull_up_down = connecteur["pull_up_down"] if "pull_up_down" in connecteur else GPIO.PUD_DOWN
+                GPIO.setup(connecteur["numero"], connecteur["mode"], pull_up_down=pull_up_down)
+                if "callback" in connecteur and "detect" in connecteur:
+                    print ("add_event_detect connecteur: {0}, detect {1}, callback : {2}".format(
+                        connecteur["numero"], 
+                        connecteur["detect"],
+                        connecteur["callback"]))
+                    GPIO.add_event_detect(connecteur["numero"], connecteur["detect"], callback=connecteur["callback"], bouncetime=200)
+            elif connecteur["mode"] == GPIO.OUT:
+                initial = connecteur["initial"] if "initial" in connecteur else GPIO.LOW
+                GPIO.setup(connecteur["numero"], connecteur["mode"], initial=initial)
+        self.fermer_valve()
         self.NIVEAU = self.mesurer_niveau()
+        if self.NIVEAU < self.NORMAL:
+            self.ouvrir_valve()
         self.afficher_niveau()
+        
 
     def afficher_niveau(self, niveau=None):
         if niveau is None:
@@ -147,10 +179,24 @@ class NiveauCtrlCmd:
         
     def ouvrir_valve(self):
         print("Ouvrir la valve pour ajouter de l'eau.")
+        if not self.valve_en_action and not self.valve_ouverte:
+            self.valve_en_action = True
+            GPIO.output(self.OUVRIR_VALVE, GPIO.HIGH)
+            time.sleep(self.temps_signal_valve)
+            GPIO.output(self.OUVRIR_VALVE, GPIO.LOW)
+            self.valve_en_action = False
+            self.valve_ouverte = True
         
     def fermer_valve(self):
         print("Fermer le valve.")
-        
+        if not self.valve_en_action and self.valve_ouverte:
+            self.valve_en_action = True
+            GPIO.output(self.FERMER_VALVE, GPIO.HIGH)
+            time.sleep(self.temps_signal_valve)
+            GPIO.output(self.FERMER_VALVE, GPIO.LOW)
+            self.valve_en_action = False
+            self.valve_ouverte = False
+            
     def lancer_alerte_haut(self):
         print("Le niveau du reservoir est haut.")
 

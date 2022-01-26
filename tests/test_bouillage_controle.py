@@ -78,14 +78,14 @@ class TestNiveauCtrlCmd(TestCase):
             if mock_name == "ouvrir_valve":
                 self.assertEqual(
                     mock.call_count,
-                    0,
-                    "La metode ouvrir_valve a ete appele. La valve n'aurais pas du etre ouverte."
+                    1,
+                    "La metode ouvrir_valve auait du etre appele une fois a l'initialisation puisque le niveau initial est min."
                 )
             if mock_name == "fermer_valve":
                 self.assertEqual(
                     mock.call_count,
-                    0,
-                    "La metode fermer_valve a ete appele. La valve n'aurais pas du etre ferme."
+                    1,
+                    "La metode fermer_valve aurait du etre appele une fois a l'initialisation du programme."
                 )
 
     @mock.patch('RPi.GPIO.setmode', side_effect=gpio_setmode_mock)
@@ -115,14 +115,14 @@ class TestNiveauCtrlCmd(TestCase):
             if mock_name == "ouvrir_valve":
                 self.assertEqual(
                     mock.call_count,
-                    1,
-                    "La metode ouvrir_valve n'a pas ete appele. La valve n'a pas ete ouverte."
+                    2,
+                    "La metode ouvrir_valve aurait du etre appele 2 fois, une fois a l'initialisation puisque le niveu etait bas et une fois lors de la transition."
                 )
             if mock_name == "fermer_valve":
                 self.assertEqual(
                     mock.call_count,
-                    0,
-                    "La metode fermer_valve a ete appele. La valve n'aurais pas du etre ferme."
+                    1,
+                    "La metode fermer_valve devrait avoir ete appele un fois lors de l'initialisation."
                 )
             if mock_name == "lancer_alerte_min":
                 self.assertEqual(
@@ -164,8 +164,8 @@ class TestNiveauCtrlCmd(TestCase):
             if mock_name == "fermer_valve":
                 self.assertEqual(
                     mock.call_count,
-                    0,
-                    "La metode fermer_valve a ete appele. La valve n'aurais pas du etre ferme."
+                    1,
+                    "La metode fermer_valve aurait du etre appele une fois lors de l'initialisation."
                 )
 
     @mock.patch('RPi.GPIO.setmode', side_effect=gpio_setmode_mock)
@@ -194,14 +194,14 @@ class TestNiveauCtrlCmd(TestCase):
             if mock_name == "ouvrir_valve":
                 self.assertEqual(
                     mock.call_count,
-                    1,
-                    "La metode ouvrir_valve n'a pas ete appele. La valve n'a pas ete ouverte."
+                    2,
+                    "La metode ouvrir_valve aurait du etre appele 2 fois, une fois lors de l'initialisation pace que le niveau etait bas et une fois lrs de la transition."
                 )
             if mock_name == "fermer_valve":
                 self.assertEqual(
                     mock.call_count,
-                    0,
-                    "La metode fermer_valve a ete appele. La valve n'aurais pas du etre ferme."
+                    1,
+                    "La metode fermer_valve aurait du etre appele une fois lors de l'initialisation."
                 )
 
     # Tests sonde NIV_HAUT
@@ -237,8 +237,8 @@ class TestNiveauCtrlCmd(TestCase):
             if mock_name == "fermer_valve":
                 self.assertEqual(
                     mock.call_count,
-                    1,
-                    "La metode fermer_valve n'a ete appele. La valve devrait se fermer."
+                    2,
+                    "La metode fermer_valve aurait du etre appele 2 fois, une fois a l'initialisation et une fois lors de la transition."
                 )
 
     @mock.patch('RPi.GPIO.setmode', side_effect=gpio_setmode_mock)
@@ -273,8 +273,8 @@ class TestNiveauCtrlCmd(TestCase):
             if mock_name == "fermer_valve":
                 self.assertEqual(
                     mock.call_count,
-                    0,
-                    "La metode fermer_valve a ete appele. La valve n'aurais pas du etre ferme."
+                    1,
+                    "La metode fermer_valve aurait du etre appele une fois lors de l'initialisation."
                 )
 
     # Test sonde NIV_MAX
@@ -311,8 +311,8 @@ class TestNiveauCtrlCmd(TestCase):
             if mock_name == "fermer_valve":
                 self.assertEqual(
                     mock.call_count,
-                    1,
-                    "La metode fermer_valve n'a ete appele. La valve devrait se fermer."
+                    2,
+                    "La metode fermer_valve aurait du etre appele 2 fois, une fois a l'initialisation et une fois lors de la transition."
                 )
             if mock_name == "lancer_alerte_max":
                 self.assertEqual(
@@ -353,8 +353,8 @@ class TestNiveauCtrlCmd(TestCase):
             if mock_name == "fermer_valve":
                 self.assertEqual(
                     mock.call_count,
-                    0,
-                    "La metode fermer_valve a ete appele. La valve n'aurais pas du etre ferme."
+                    1,
+                    "La metode fermer_valve aurait du etre appele une fois lors de l'initialisation."
                 )
                 
     
