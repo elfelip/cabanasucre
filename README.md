@@ -21,6 +21,11 @@ On exécute ce composant sur le RaspberryPi Zero sur lequel est branché le circ
 
 ## Kafkabanasucre
 
+Pré-requis:
+    Avoir un cluster Openshift ou OKD.
+    L'opérateur Strimzi doit être déployé sur le cluster Openshift/OKD
+    Les clients kubectl et oc doivent être installé sur le poste et ils doivent être configurés pour se brancher au cluster OKD avec des droits d'administrations.
+    
 Pour créer le cluster kafkabanasucre, suivre les étapes suivantes:
 
     Crééer le namespace:
