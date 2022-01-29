@@ -1,8 +1,9 @@
+---
 apiVersion: kafka.strimzi.io/v1beta2
 kind: Kafka
 metadata:
-  name: my-cluster
-  namespace: default
+  name: kafkabanasucre
+  namespace: cabanasucre
 spec:
   kafka:
     config:
@@ -13,7 +14,7 @@ spec:
       inter.broker.protocol.version: '3.0'
     storage:
       type: persistent-claim
-      size: 1Gi
+      size: 10Gi
       deleteClaim: true
       class: openebs-lvm-localpv-slow
     listeners:
@@ -21,12 +22,8 @@ spec:
         port: 9092
         type: internal
         tls: false
-      - name: tls
-        port: 9093
-        type: internal
-        tls: true
       - name: external
-        port: 39092
+        port: 19092
         type: nodeport
         tls: false
         configuration:
@@ -71,6 +68,54 @@ spec:
                     - key: strimzi.io/name
                       operator: In
                       values:
-                        - my-cluster-zookeeper
+                        - kafkabanasucre-zookeeper
                 topologyKey: kubernetes.io/hostname
     replicas: 3
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: bouillage.temperature
+  labels:
+    strimzi.io/cluster: kafkabanasucre
+  namespace: cabanasucre 
+spec: 
+  partitions: 3
+  replicas: 2
+  config:
+    cleanup.policy: delete
+    retention.ms: -1
+    retention.bytes: 2147483648 # 2Gi
+    segment.bytes: 536870912 # 512Mi
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: bouillage.niveau
+  labels:
+    strimzi.io/cluster: kafkabanasucre
+  namespace: cabanasucre 
+spec: 
+  partitions: 3
+  replicas: 2
+  config:
+    cleanup.policy: delete
+    retention.ms: -1
+    retention.bytes: 2147483648 # 2Gi
+    segment.bytes: 536870912 # 512Mi
+---
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaTopic
+metadata:
+  name: bouillage.alertes
+  labels:
+    strimzi.io/cluster: kafkabanasucre
+  namespace: cabanasucre 
+spec: 
+  partitions: 3
+  replicas: 2
+  config:
+    cleanup.policy: delete
+    retention.ms: -1
+    retention.bytes: 2147483648 # 2Gi
+    segment.bytes: 536870912 # 512Mi
