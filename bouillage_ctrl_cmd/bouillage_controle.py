@@ -5,6 +5,8 @@ import signal
 import sys
 import time
 import RPi.GPIO as GPIO
+import logging
+import threading
 
 class NiveauCtrlCmd:
 
@@ -107,18 +109,18 @@ class NiveauCtrlCmd:
                 "initial": GPIO.LOW
             }
         ]
-        print("setmode: GPIO.BCM: {0}".format(GPIO.BCM))
+        logging.info("setmode: GPIO.BCM: {0}".format(GPIO.BCM))
         GPIO.setmode(GPIO.BCM)
 
         for connecteur in self.connecteurs:
-            print ("setup connecteur {0} mode: {1}".format(
+            logging.info ("setup connecteur {0} mode: {1}".format(
                 connecteur["numero"], 
                 connecteur["mode"]))
             if connecteur["mode"] == GPIO.IN:
                 pull_up_down = connecteur["pull_up_down"] if "pull_up_down" in connecteur else GPIO.PUD_DOWN
                 GPIO.setup(connecteur["numero"], connecteur["mode"], pull_up_down=pull_up_down)
                 if "callback" in connecteur and "detect" in connecteur:
-                    print ("add_event_detect connecteur: {0}, detect {1}, callback : {2}".format(
+                    logging.info ("add_event_detect connecteur: {0}, detect {1}, callback : {2}".format(
                         connecteur["numero"], 
                         connecteur["detect"],
                         connecteur["callback"]))
@@ -137,17 +139,17 @@ class NiveauCtrlCmd:
         if niveau is None:
             niveau = self.NIVEAU
         if niveau == self.MIN:
-            print ("Le niveau est sous le niveau minimum.")
+            logging.info("Le niveau est sous le niveau minimum.")
         elif niveau == self.BAS:
-            print ("Le niveau est bas.")
+            logging.info("Le niveau est bas.")
         elif niveau == self.NORMAL:
-            print ("Le niveau est normal")
+            logging.info("Le niveau est normal")
         elif niveau == self.HAUT:
-            print ("Le niveau est haut.")
+            logging.info("Le niveau est haut.")
         elif niveau == self.MAX:
-            print ("Le niveau est au dessus du niveau maximum.")
+            logging.info("Le niveau est au dessus du niveau maximum.")
         else:
-            print ("Le niveau est inconnu, verifier le systeme.")
+            logging.error("Le niveau est inconnu, verifier le systeme.")
             
     def alerter_changement_niveau(self, niveau=None):
         if niveau is None:
@@ -166,19 +168,19 @@ class NiveauCtrlCmd:
             self.lancer_erreur_niveau()
 
     def lancer_alerte_vide(self):
-        print("Alerte, Le chaudron est vide.")
+        logging.info("Alerte, Le chaudron est vide.")
 
     def lancer_alerte_min(self):
-        print("Alerte, Le reservoir est au niveau minimum.")
+        logging.info("Alerte, Le reservoir est au niveau minimum.")
 
     def lancer_alerte_bas(self):
-        print("Alerte, Le reservoir est bas.")
+        logging.info("Alerte, Le reservoir est bas.")
         
     def lancer_alerte_normal(self):
-        print("Alerte, Le niveau du reservoir est normal pour le bouillage")
+        logging.info("Alerte, Le niveau du reservoir est normal pour le bouillage")
         
     def ouvrir_valve(self):
-        print("Ouvrir la valve pour ajouter de l'eau.")
+        logging.info("Ouvrir la valve pour ajouter de l'eau.")
         if not self.valve_en_action and not self.valve_ouverte:
             self.valve_en_action = True
             GPIO.output(self.OUVRIR_VALVE, GPIO.HIGH)
@@ -188,7 +190,7 @@ class NiveauCtrlCmd:
             self.valve_ouverte = True
         
     def fermer_valve(self):
-        print("Fermer le valve.")
+        logging.info("Fermer le valve.")
         if not self.valve_en_action and self.valve_ouverte:
             self.valve_en_action = True
             GPIO.output(self.FERMER_VALVE, GPIO.HIGH)
@@ -198,13 +200,13 @@ class NiveauCtrlCmd:
             self.valve_ouverte = False
             
     def lancer_alerte_haut(self):
-        print("Le niveau du reservoir est haut.")
+        logging.info("Le niveau du reservoir est haut.")
 
     def lancer_alerte_max(self):
-        print("Alerte, le niveau maiximal est atteint, il y a probablement un probleme avec la valve.")    
+        logging.info("Alerte, le niveau maiximal est atteint, il y a probablement un probleme avec la valve.")    
 
     def lancer_erreur_niveau(self):
-        print("Alerte Les informations de niveau sont incoherents. Il doit y avoir un probleme avec la sonde.")
+        logging.error("Alerte Les informations de niveau sont incoherents. Il doit y avoir un probleme avec la sonde.")
 
     def traiter_event_detect_pour_sonde_niveau(self, channel=None):
         nouveau_niveau = self.mesurer_niveau()
@@ -235,13 +237,25 @@ class NiveauCtrlCmd:
         else:
             return self.MIN
 
+    def lire_temperature():
+        while True:
+            logging.info("Lecture de la temperature")
+            time.sleep(60)
+    
 def signal_handler(sig, frame):
         GPIO.cleanup()
         sys.exit(0)
 
 def main():
-    crtl_cmd = NiveauCtrlCmd()
+    format = "%(asctime)s: %(message)s"
+    logging.basicConfig(
+        format=format,
+        level=logging.INFO,
+        datefmt="%H:%M:%S")
+
+    ctrl_cmd = NiveauCtrlCmd()
     signal.signal(signal.SIGINT, signal_handler)
+    temp_thread = threading.Thread(target=ctrl_cmd.lire_temperature)
     signal.pause()
 
 if __name__ == "__main__":

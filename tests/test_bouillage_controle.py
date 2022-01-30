@@ -6,7 +6,7 @@ import unittest
 from unittest import TestCase, mock
 
 class TestNiveauCtrlCmd(TestCase):
-    def setUp(self) -> None:
+    def setUp(self):
         self.callbacks = []
         return super().setUp()
     def gpio_setmode_mock(*args, **kwargs):
