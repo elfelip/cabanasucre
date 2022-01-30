@@ -3,10 +3,12 @@
 
 import signal
 import sys
-import time
+from time import localtime, strftime, sleep
 import RPi.GPIO as GPIO
 import logging
 import threading
+import os
+from inspqcommun.kafka.producteur import obtenirConfigurationsProducteurDepuisVariablesEnvironnement, creerProducteur, publierMessage
 
 class NiveauCtrlCmd:
 
@@ -27,6 +29,9 @@ class NiveauCtrlCmd:
     HAUT = 4
     MAX = 5
     temps_signal_valve = 3
+    topic_niveau = "bouillage.niveau"
+    topic_alerte = "bouillage.alertes"
+    topic_temp = "bouillage.temperature"
     
     def __init__(self):
         self.valve_en_action = False
@@ -133,6 +138,8 @@ class NiveauCtrlCmd:
         if self.NIVEAU < self.NORMAL:
             self.ouvrir_valve()
         self.afficher_niveau()
+        self.kafka_config = obtenirConfigurationsProducteurDepuisVariablesEnvironnement() if 'BOOTSTRAP_SERVERS' in os.environ else {}
+        self.producteur = creerProducteur(config=self.kafka_config) if "bootstrap.servers" in self.kafka_config else None
         
 
     def afficher_niveau(self, niveau=None):
@@ -167,24 +174,62 @@ class NiveauCtrlCmd:
         else:
             self.lancer_erreur_niveau()
 
+    def publier_niveau(self, msg, alerte=False):
+        if self.producteur is not None:
+            maintenant = self.maintenant()
+            message = {}
+            message["key"] = maintenant
+            message["value"] = {}
+            message["value"]["timestamp"] = maintenant
+            message["value"]["niveau"] = self.NIVEAU
+            message["value"]["message"] = msg
+            publierMessage(producteur=self.producteur,message=message,topic=self.topic_niveau,logger=logging)
+            if alerte:
+                publierMessage(producteur=self.producteur,message=message,topic=self.topic_alerte,logger=logging)
+
     def lancer_alerte_vide(self):
-        logging.info("Alerte, Le chaudron est vide.")
+        msg = "Alerte, Le chaudron est vide."
+        logging.warn(msg=msg)
+        self.publier_niveau(msg=msg, alerte=True)
+            
 
     def lancer_alerte_min(self):
-        logging.info("Alerte, Le reservoir est au niveau minimum.")
-
+        msg = "Alerte, Le reservoir est au niveau minimum."
+        logging.warn(msg=msg)
+        self.publier_niveau(msg=msg, alerte=True)
+        
     def lancer_alerte_bas(self):
-        logging.info("Alerte, Le reservoir est bas.")
+        msg = "Alerte, Le reservoir est bas."
+        logging.info(msg=msg)
+        self.publier_niveau(msg=msg,alerte=False)
+        
         
     def lancer_alerte_normal(self):
-        logging.info("Alerte, Le niveau du reservoir est normal pour le bouillage")
+        msg = "Alerte, Le niveau du reservoir est normal pour le bouillage"
+        logging.info(msg=msg)
+        self.publier_niveau(msg=msg, alerte=False)
         
+    def lancer_alerte_haut(self):
+        msg = "Le niveau du reservoir est haut."
+        logging.info(msg=msg)
+        self.publier_niveau(msg=msg, alerte=False)
+
+    def lancer_alerte_max(self):
+        msg = "Alerte, le niveau maximal est atteint, il y a probablement un probleme avec la valve."
+        logging.warn(msg=msg)
+        self.publier_niveau(msg=msg, alerte=True)
+
+    def lancer_erreur_niveau(self):
+        msg = "Alerte Les informations de niveau sont incoherents. Il doit y avoir un probleme avec la sonde."
+        logging.error(msg=msg)
+        self.publier_niveau(msg=msg, alerte=True)
+
     def ouvrir_valve(self):
         logging.info("Ouvrir la valve pour ajouter de l'eau.")
         if not self.valve_en_action and not self.valve_ouverte:
             self.valve_en_action = True
             GPIO.output(self.OUVRIR_VALVE, GPIO.HIGH)
-            time.sleep(self.temps_signal_valve)
+            sleep(self.temps_signal_valve)
             GPIO.output(self.OUVRIR_VALVE, GPIO.LOW)
             self.valve_en_action = False
             self.valve_ouverte = True
@@ -194,19 +239,11 @@ class NiveauCtrlCmd:
         if not self.valve_en_action and self.valve_ouverte:
             self.valve_en_action = True
             GPIO.output(self.FERMER_VALVE, GPIO.HIGH)
-            time.sleep(self.temps_signal_valve)
+            sleep(self.temps_signal_valve)
             GPIO.output(self.FERMER_VALVE, GPIO.LOW)
             self.valve_en_action = False
             self.valve_ouverte = False
             
-    def lancer_alerte_haut(self):
-        logging.info("Le niveau du reservoir est haut.")
-
-    def lancer_alerte_max(self):
-        logging.info("Alerte, le niveau maiximal est atteint, il y a probablement un probleme avec la valve.")    
-
-    def lancer_erreur_niveau(self):
-        logging.error("Alerte Les informations de niveau sont incoherents. Il doit y avoir un probleme avec la sonde.")
 
     def traiter_event_detect_pour_sonde_niveau(self, channel=None):
         nouveau_niveau = self.mesurer_niveau()
@@ -237,10 +274,21 @@ class NiveauCtrlCmd:
         else:
             return self.MIN
 
-    def lire_temperature():
+    def lire_temperature(self):
         while True:
-            logging.info("Lecture de la temperature")
-            time.sleep(60)
+            temperature = 20
+            logging.info("La temperature est: {0]".format(temperature))
+            if self.producteur is not None:
+                message = {}
+                maintenant = self.maintenant()
+                message["key"] = maintenant
+                message["value"] = temperature
+                publierMessage(producteur=self.producteur, message=message, topic=self.topic_temp, logger=logging)
+            sleep(60)
+            
+    def maintenant(self):
+        str_maintenant = strftime("%Y-%m-%d:%H:%M:%S", localtime())
+        return str_maintenant
     
 def signal_handler(sig, frame):
         GPIO.cleanup()

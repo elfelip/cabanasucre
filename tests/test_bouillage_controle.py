@@ -4,10 +4,12 @@
 from bouillage_ctrl_cmd.bouillage_controle import NiveauCtrlCmd
 import unittest
 from unittest import TestCase, mock
+#import os
 
 class TestNiveauCtrlCmd(TestCase):
     def setUp(self):
         self.callbacks = []
+        #os.environ["BOOTSTRAP_SERVERS"] = "kube06.lacave.info:31092,kube07.lacave.info:31093,kube08.lacave.info:31094"
         return super().setUp()
     def gpio_setmode_mock(*args, **kwargs):
         pass

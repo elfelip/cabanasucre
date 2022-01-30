@@ -38,4 +38,6 @@ Pour créer le cluster kafkabanasucre, suivre les étapes suivantes:
     Le cluster Kafka sera accessible par l'adresse suivante:
         kube06.lacave.info:31092,kube07.lacave.info:31093,kube08.lacave.info:31094
     On peut vérifier si les topics sont créés avec la commande suivante:
-        docker run -ti --rm --name kafkatools --entrypoint kafka-topics confluentinc/cp-kafka:latest --bootstrap-server kube06.lacave.info:31092,kube07.lacave.info:31093,kube08.lacave.info:31094 --list 
+        docker run -ti --rm --name kafkatools --entrypoint kafka-topics confluentinc/cp-kafka:latest --bootstrap-server kube06.lacave.info:31092,kube07.lacave.info:31093,kube08.lacave.info:31094 --list
+    On peut consommer les messages d'un topic avec la commande suivante:
+        docker run -ti --rm --name kafkatools --entrypoint kafka-console-consumer confluentinc/cp-kafka:latest --bootstrap-server kube06.lacave.info:31092,kube07.lacave.info:31093,kube08.lacave.info:31094 --topic bouillage.niveau --from-beginning --property print.key=true
