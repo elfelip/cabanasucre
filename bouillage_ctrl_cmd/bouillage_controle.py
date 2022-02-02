@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-
+import glob
 import signal
 import sys
 from time import localtime, strftime, sleep
@@ -15,7 +15,7 @@ class NiveauCtrlCmd:
     NIV_MIN_R = 5
     NIV_MIN_F = 12
     NIV_BAS_R = 17
-    NIV_BAS_F = 16
+    NIV_BAS_F = 23
     NIV_HAUT_R = 27
     NIV_HAUT_F = 24
     NIV_MAX_R = 22
@@ -28,10 +28,12 @@ class NiveauCtrlCmd:
     NORMAL = 3
     HAUT = 4
     MAX = 5
+    NIVEAU = 0
     temps_signal_valve = 3
     topic_niveau = "bouillage.niveau"
     topic_alerte = "bouillage.alertes"
     topic_temp = "bouillage.temperature"
+    producteur = None
     
     def __init__(self):
         self.valve_en_action = False
@@ -124,15 +126,18 @@ class NiveauCtrlCmd:
             if connecteur["mode"] == GPIO.IN:
                 pull_up_down = connecteur["pull_up_down"] if "pull_up_down" in connecteur else GPIO.PUD_DOWN
                 GPIO.setup(connecteur["numero"], connecteur["mode"], pull_up_down=pull_up_down)
+            elif connecteur["mode"] == GPIO.OUT:
+                initial = connecteur["initial"] if "initial" in connecteur else GPIO.LOW
+                GPIO.setup(connecteur["numero"], connecteur["mode"], initial=initial)
+
+        for connecteur in self.connecteurs:
+            if connecteur["mode"] == GPIO.IN:
                 if "callback" in connecteur and "detect" in connecteur:
                     logging.info ("add_event_detect connecteur: {0}, detect {1}, callback : {2}".format(
                         connecteur["numero"], 
                         connecteur["detect"],
                         connecteur["callback"]))
                     GPIO.add_event_detect(connecteur["numero"], connecteur["detect"], callback=connecteur["callback"], bouncetime=200)
-            elif connecteur["mode"] == GPIO.OUT:
-                initial = connecteur["initial"] if "initial" in connecteur else GPIO.LOW
-                GPIO.setup(connecteur["numero"], connecteur["mode"], initial=initial)
         self.fermer_valve()
         self.NIVEAU = self.mesurer_niveau()
         if self.NIVEAU < self.NORMAL:
@@ -140,6 +145,8 @@ class NiveauCtrlCmd:
         self.afficher_niveau()
         self.kafka_config = obtenirConfigurationsProducteurDepuisVariablesEnvironnement() if 'BOOTSTRAP_SERVERS' in os.environ else {}
         self.producteur = creerProducteur(config=self.kafka_config) if "bootstrap.servers" in self.kafka_config else None
+        os.system('sudo modprobe w1-gpio')
+        os.system('sudo modprobe w1-therm')
         
 
     def afficher_niveau(self, niveau=None):
@@ -189,13 +196,13 @@ class NiveauCtrlCmd:
 
     def lancer_alerte_vide(self):
         msg = "Alerte, Le chaudron est vide."
-        logging.warn(msg=msg)
+        logging.warning(msg=msg)
         self.publier_niveau(msg=msg, alerte=True)
             
 
     def lancer_alerte_min(self):
         msg = "Alerte, Le reservoir est au niveau minimum."
-        logging.warn(msg=msg)
+        logging.warning(msg=msg)
         self.publier_niveau(msg=msg, alerte=True)
         
     def lancer_alerte_bas(self):
@@ -216,7 +223,7 @@ class NiveauCtrlCmd:
 
     def lancer_alerte_max(self):
         msg = "Alerte, le niveau maximal est atteint, il y a probablement un probleme avec la valve."
-        logging.warn(msg=msg)
+        logging.warning(msg=msg)
         self.publier_niveau(msg=msg, alerte=True)
 
     def lancer_erreur_niveau(self):
@@ -275,9 +282,15 @@ class NiveauCtrlCmd:
             return self.MIN
 
     def lire_temperature(self):
+        base_dir = '/sys/bus/w1/devices/'
+        device_folder = glob.glob(base_dir + '28*')[0]
+        device_file = device_folder + '/temperature'	
         while True:
-            temperature = 20
-            logging.info("La temperature est: {0]".format(temperature))
+            f = open(device_file, 'r')
+            lines = f.readlines()
+            f.close()
+            temperature = int(lines[0])/1000
+            logging.info("La temperature est: {0}".format(temperature))
             if self.producteur is not None:
                 message = {}
                 maintenant = self.maintenant()
@@ -304,7 +317,8 @@ def main():
     ctrl_cmd = NiveauCtrlCmd()
     signal.signal(signal.SIGINT, signal_handler)
     temp_thread = threading.Thread(target=ctrl_cmd.lire_temperature)
-    signal.pause()
+    temp_thread.start()
+    #signal.pause()
 
 if __name__ == "__main__":
     main()

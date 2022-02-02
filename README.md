@@ -19,6 +19,12 @@ Les mesures de niveau, de température ainsi que les alertes sont publiés sur l
 
 On exécute ce composant sur le RaspberryPi Zero sur lequel est branché le circuit de CabanaSucre, la sonde de température, la sonde de niveau et la valve du réservoir. Ce cicruit est relié au RaspberryPi Zero par son port GPIO.
 
+Pré-requis
+	Installer les packages suivants pour Kafka
+	sudo apt-get install librdkafka-dev
+	Installer les requirements.txt
+	python3 -m pip install -r requirements.txt
+
 ## Kafkabanasucre
 
 Pré-requis:
