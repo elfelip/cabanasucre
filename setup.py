@@ -10,9 +10,9 @@ setup(
     author='Philippe Gauthier',
     author_email='elfelip@yahoo.com',
     # Needed to actually package something
-    packages=['bouillage_ctrl_cmd','bouillage_controle'],
+    packages=['console_sucrier','bouillage_controle'],
     # Needed for dependencies
-    install_requires=[],
+    install_requires=['inspqcommun==1.3.3'],
     # *strongly* suggested for sharing
     version='0.0.1',
     #version_command=('git describe', "pep440-git-local"),
