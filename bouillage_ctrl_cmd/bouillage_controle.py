@@ -29,7 +29,7 @@ class NiveauCtrlCmd:
     HAUT = 4
     MAX = 5
     NIVEAU = 0
-    temps_signal_valve = 3
+    temps_signal_valve = 0.03
     topic_niveau = "bouillage.niveau"
     topic_alerte = "bouillage.alertes"
     topic_temp = "bouillage.temperature"
