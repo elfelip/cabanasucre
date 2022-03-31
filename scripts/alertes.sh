@@ -1,0 +1,1 @@
+docker run -ti --name kafkatoolsalertes --rm confluentinc/cp-kafka:latest kafka-console-consumer --bootstrap-server kube06.lacave.info:31092,kube07.lacave.info:31093,kube08.lacave.info:31094 --topic bouillage.alertes --from-beginning --property print.key=true
