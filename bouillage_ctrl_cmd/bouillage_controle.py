@@ -283,17 +283,19 @@ class NiveauCtrlCmd:
             return self.MIN
 
     def lire_temperature(self):
-        base_dir = '/sys/bus/w1/devices/'
-        device_folder = glob.glob(base_dir + '28*')[0]
-        device_file = device_folder + '/temperature'	
         while True:
             lines = []
-            try:
-                f = open(device_file, 'r')
-                lines = f.readlines()
-                f.close()
-            except FileNotFoundError:
-                print ("Le fichier n'est pas disponible")
+            base_dir = '/sys/bus/w1/devices/'
+            device_folders = glob.glob(base_dir + '28*')[0]
+            if len(device_folders) > 0:
+                device_folder = device_folders[0]
+                device_file = device_folder + '/temperature'	
+                try:
+                    f = open(device_file, 'r')
+                    lines = f.readlines()
+                    f.close()
+                except FileNotFoundError:
+                    print ("Le fichier n'est pas disponible")
 
             if len(lines) > 0:
                 temperature = int(lines[0])/1000
@@ -304,6 +306,8 @@ class NiveauCtrlCmd:
                     message["key"] = maintenant.encode()
                     message["value"] = str(temperature).encode()
                     publierMessage(producteur=self.producteur, message=message, topic=self.topic_temp, logger=logging)
+            else:
+                print("La sonde n'a pas retourné de température")
             sleep(60)
             
     def maintenant(self):
