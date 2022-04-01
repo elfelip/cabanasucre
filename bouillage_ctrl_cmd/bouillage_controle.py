@@ -147,6 +147,7 @@ class NiveauCtrlCmd:
         self.producteur = creerProducteur(config=self.kafka_config) if "bootstrap.servers" in self.kafka_config else None
         os.system('sudo modprobe w1-gpio')
         os.system('sudo modprobe w1-therm')
+        self.alerter_changement_niveau(niveau=self.NIVEAU)
         
 
     def afficher_niveau(self, niveau=None):
