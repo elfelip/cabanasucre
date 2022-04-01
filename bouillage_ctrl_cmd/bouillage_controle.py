@@ -287,9 +287,14 @@ class NiveauCtrlCmd:
         device_folder = glob.glob(base_dir + '28*')[0]
         device_file = device_folder + '/temperature'	
         while True:
-            f = open(device_file, 'r')
-            lines = f.readlines()
-            f.close()
+            lines = []
+            try:
+                f = open(device_file, 'r')
+                lines = f.readlines()
+                f.close()
+            except FileNotFoundError:
+                print ("Le fichier n'est pas disponible")
+
             if len(lines) > 0:
                 temperature = int(lines[0])/1000
                 logging.info("La temperature est: {0}".format(temperature))
