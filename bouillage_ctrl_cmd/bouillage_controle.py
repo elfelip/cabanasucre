@@ -286,7 +286,7 @@ class NiveauCtrlCmd:
         while True:
             lines = []
             base_dir = '/sys/bus/w1/devices/'
-            device_folders = glob.glob(base_dir + '28*')[0]
+            device_folders = glob.glob(base_dir + '28*')
             if len(device_folders) > 0:
                 device_folder = device_folders[0]
                 device_file = device_folder + '/temperature'	
