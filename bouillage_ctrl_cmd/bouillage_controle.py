@@ -289,14 +289,15 @@ class NiveauCtrlCmd:
             f = open(device_file, 'r')
             lines = f.readlines()
             f.close()
-            temperature = int(lines[0])/1000
-            logging.info("La temperature est: {0}".format(temperature))
-            if self.producteur is not None:
-                message = {}
-                maintenant = self.maintenant()
-                message["key"] = maintenant.encode()
-                message["value"] = str(temperature).encode()
-                publierMessage(producteur=self.producteur, message=message, topic=self.topic_temp, logger=logging)
+            if len(lines) > 0:
+                temperature = int(lines[0])/1000
+                logging.info("La temperature est: {0}".format(temperature))
+                if self.producteur is not None:
+                    message = {}
+                    maintenant = self.maintenant()
+                    message["key"] = maintenant.encode()
+                    message["value"] = str(temperature).encode()
+                    publierMessage(producteur=self.producteur, message=message, topic=self.topic_temp, logger=logging)
             sleep(60)
             
     def maintenant(self):
