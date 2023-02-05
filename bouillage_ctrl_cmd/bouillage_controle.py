@@ -295,10 +295,13 @@ class NiveauCtrlCmd:
     def maintenant(self):
         str_maintenant = strftime("%Y-%m-%d:%H:%M:%S", localtime())
         return str_maintenant
+
+ctrl_cmd = NiveauCtrlCmd()
     
 def signal_handler(sig, frame):
-        GPIO.cleanup()
-        sys.exit(0)
+    ctrl_cmd.arreter_pompe()
+    GPIO.cleanup()
+    sys.exit(0)
 
 def main():
     format = "%(asctime)s: %(message)s"
@@ -307,7 +310,6 @@ def main():
         level=logging.INFO,
         datefmt="%H:%M:%S")
 
-    ctrl_cmd = NiveauCtrlCmd()
     signal.signal(signal.SIGINT, signal_handler)
     temp_thread = threading.Thread(target=ctrl_cmd.lire_temperature)
     temp_thread.start()
