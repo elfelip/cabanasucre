@@ -11,17 +11,15 @@ import os
 from inspqcommun.kafka.producteur import obtenirConfigurationsProducteurDepuisVariablesEnvironnement, creerProducteur, publierMessage
 
 class NiveauCtrlCmd:
-
-    NIV_MIN_R = 5
-    NIV_MIN_F = 12
-    NIV_BAS_R = 17
-    NIV_BAS_F = 23
-    NIV_HAUT_R = 27
-    NIV_HAUT_F = 24
-    NIV_MAX_R = 22
-    NIV_MAX_F = 25
-    FERMER_VALVE = 16
-    OUVRIR_VALVE = 26
+    NIV_MIN_R = 29
+    NIV_MIN_F = 32
+    NIV_BAS_R = 11
+    NIV_BAS_F = 16
+    NIV_HAUT_R = 13
+    NIV_HAUT_F = 18
+    NIV_MAX_R = 15
+    NIV_MAX_F = 22
+    POMPE = 26
     ERREUR = 0
     MIN = 1
     BAS = 2
@@ -29,15 +27,13 @@ class NiveauCtrlCmd:
     HAUT = 4
     MAX = 5
     NIVEAU = 0
-    temps_signal_valve = 0.03
     topic_niveau = "bouillage.niveau"
     topic_alerte = "bouillage.alertes"
     topic_temp = "bouillage.temperature"
     producteur = None
     
     def __init__(self):
-        self.valve_en_action = False
-        self.valve_ouverte = False
+        self.pompe_en_action = False
         self.connecteurs = [
             {
                 "numero": self.NIV_MIN_R,
@@ -104,14 +100,8 @@ class NiveauCtrlCmd:
                 "pull_up_down": GPIO.PUD_DOWN
             },
             {
-                "numero": self.OUVRIR_VALVE,
-                "nom": "OUVRIR_VALVE",
-                "mode": GPIO.OUT,
-                "initial": GPIO.LOW
-            },
-            {
-                "numero": self.FERMER_VALVE,
-                "nom": "FERMER_VALVE",
+                "numero": self.POMPE,
+                "nom": "POMPE",
                 "mode": GPIO.OUT,
                 "initial": GPIO.LOW
             }
@@ -138,10 +128,10 @@ class NiveauCtrlCmd:
                         connecteur["detect"],
                         connecteur["callback"]))
                     GPIO.add_event_detect(connecteur["numero"], connecteur["detect"], callback=connecteur["callback"], bouncetime=200)
-        self.fermer_valve()
+        self.arreter_pompe()
         self.NIVEAU = self.mesurer_niveau()
         if self.NIVEAU < self.NORMAL:
-            self.ouvrir_valve()
+            self.demarrer_pompe()
         self.afficher_niveau()
         self.kafka_config = obtenirConfigurationsProducteurDepuisVariablesEnvironnement() if 'BOOTSTRAP_SERVERS' in os.environ else {}
         self.producteur = creerProducteur(config=self.kafka_config) if "bootstrap.servers" in self.kafka_config else None
@@ -232,25 +222,17 @@ class NiveauCtrlCmd:
         logging.error(msg=msg)
         self.publier_niveau(msg=msg, alerte=True)
 
-    def ouvrir_valve(self):
-        logging.info("Ouvrir la valve pour ajouter de l'eau.")
-        if not self.valve_en_action and not self.valve_ouverte:
-            self.valve_en_action = True
-            GPIO.output(self.OUVRIR_VALVE, GPIO.HIGH)
-            sleep(self.temps_signal_valve)
-            GPIO.output(self.OUVRIR_VALVE, GPIO.LOW)
-            self.valve_en_action = False
-            self.valve_ouverte = True
+    def demarrer_pompe(self):
+        logging.info("Démarrer la pompe pour ajouter de l'eau.")
+        if not self.pompe_en_action:
+            GPIO.output(self.POMPE, GPIO.HIGH)
+            self.pompe_en_action = True
         
-    def fermer_valve(self):
-        logging.info("Fermer le valve.")
-        if not self.valve_en_action and self.valve_ouverte:
-            self.valve_en_action = True
-            GPIO.output(self.FERMER_VALVE, GPIO.HIGH)
-            sleep(self.temps_signal_valve)
-            GPIO.output(self.FERMER_VALVE, GPIO.LOW)
-            self.valve_en_action = False
-            self.valve_ouverte = False
+    def arreter_pompe(self):
+        logging.info("Arrêter la pompe.")
+        if self.pompe_en_action:
+            GPIO.output(self.POMPE, GPIO.LOW)
+            self.pompe_en_action = False
             
 
     def traiter_event_detect_pour_sonde_niveau(self, channel=None):
@@ -258,9 +240,9 @@ class NiveauCtrlCmd:
 
         if nouveau_niveau != self.NIVEAU and nouveau_niveau != self.ERREUR:
             if nouveau_niveau < self.NIVEAU and nouveau_niveau <= self.BAS:
-                self.ouvrir_valve()
+                self.demarrer_pompe()
             elif nouveau_niveau > self.NIVEAU and nouveau_niveau >= self.HAUT:
-                self.fermer_valve()
+                self.arreter_pompe()
             self.afficher_niveau(niveau=nouveau_niveau)
             self.alerter_changement_niveau(niveau=nouveau_niveau)
         self.NIVEAU = nouveau_niveau
