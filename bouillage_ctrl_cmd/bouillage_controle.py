@@ -11,15 +11,15 @@ import os
 from inspqcommun.kafka.producteur import obtenirConfigurationsProducteurDepuisVariablesEnvironnement, creerProducteur, publierMessage
 
 class NiveauCtrlCmd:
-    NIV_MIN_R = 29
-    NIV_MIN_F = 32
-    NIV_BAS_R = 11
-    NIV_BAS_F = 16
-    NIV_HAUT_R = 13
-    NIV_HAUT_F = 18
-    NIV_MAX_R = 15
-    NIV_MAX_F = 22
-    POMPE = 26
+    NIV_MIN_R = 5 # 29
+    NIV_MIN_F = 12 # 32
+    NIV_BAS_R = 17 # 11
+    NIV_BAS_F = 23 # 16
+    NIV_HAUT_R = 27 # 13
+    NIV_HAUT_F = 24 # 18
+    NIV_MAX_R = 22 # 15
+    NIV_MAX_F = 25 # 22
+    POMPE = 26 # 37
     ERREUR = 0
     MIN = 1
     BAS = 2
@@ -27,6 +27,7 @@ class NiveauCtrlCmd:
     HAUT = 4
     MAX = 5
     NIVEAU = 0
+    MODE = GPIO.BCM # GPIO.BOARD
     topic_niveau = "bouillage.niveau"
     topic_alerte = "bouillage.alertes"
     topic_temp = "bouillage.temperature"
@@ -106,8 +107,8 @@ class NiveauCtrlCmd:
                 "initial": GPIO.LOW
             }
         ]
-        logging.info("setmode: GPIO.BCM: {0}".format(GPIO.BCM))
-        GPIO.setmode(GPIO.BCM)
+        logging.info("setmode: {0}".format(self.MODE))
+        GPIO.setmode(self.MODE)
 
         for connecteur in self.connecteurs:
             logging.info ("setup connecteur {0} mode: {1}".format(
