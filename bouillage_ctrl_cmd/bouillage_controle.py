@@ -203,13 +203,13 @@ class NiveauCtrlCmd:
         self.publier_niveau(msg=msg, alerte=True)
         
     def lancer_alerte_bas(self):
-        msg = "Alerte, Le reservoir est bas."
+        msg = "Le reservoir est bas."
         logging.info(msg=msg)
         self.publier_niveau(msg=msg,alerte=False)
         
         
     def lancer_alerte_normal(self):
-        msg = "Alerte, Le niveau du reservoir est normal pour le bouillage"
+        msg = "Le niveau du reservoir est normal pour le bouillage"
         logging.info(msg=msg)
         self.publier_niveau(msg=msg, alerte=False)
         
