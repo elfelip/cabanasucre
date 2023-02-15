@@ -104,7 +104,7 @@ class NiveauCtrlCmd:
                 "numero": self.POMPE,
                 "nom": "POMPE",
                 "mode": GPIO.OUT,
-                "initial": GPIO.LOW
+                "initial": GPIO.HIGH
             }
         ]
         logging.info("setmode: {0}".format(self.MODE))
@@ -226,13 +226,13 @@ class NiveauCtrlCmd:
     def demarrer_pompe(self):
         logging.info("Démarrer la pompe pour ajouter de l'eau.")
         if not self.pompe_en_action:
-            GPIO.output(self.POMPE, GPIO.HIGH)
+            GPIO.output(self.POMPE, GPIO.LOW)
             self.pompe_en_action = True
         
     def arreter_pompe(self):
         logging.info("Arrêter la pompe.")
         if self.pompe_en_action:
-            GPIO.output(self.POMPE, GPIO.LOW)
+            GPIO.output(self.POMPE, GPIO.HIGH)
             self.pompe_en_action = False
             
 
