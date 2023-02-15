@@ -238,6 +238,8 @@ class NiveauCtrlCmd:
 
     def traiter_event_detect_pour_sonde_niveau(self, channel=None):
         nouveau_niveau = self.mesurer_niveau()
+        msg = "Niveau avant mesure: {0}. Nouveau niveau {1}".format(self.NIVEAU, nouveau_niveau)
+        logging.info(msg)
 
         if nouveau_niveau != self.NIVEAU and nouveau_niveau != self.ERREUR:
             if nouveau_niveau < self.NIVEAU and nouveau_niveau <= self.BAS:
