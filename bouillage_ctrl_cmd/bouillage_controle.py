@@ -20,7 +20,8 @@ class NiveauCtrlCmd:
     NIV_MAX_R = 22 # 15
     NIV_MAX_F = 25 # 22
     POMPE = 26 # 37
-    ERREUR = 0
+    ERREUR = -1
+    VIDE = 0
     MIN = 1
     BAS = 2
     NORMAL = 3
@@ -144,7 +145,9 @@ class NiveauCtrlCmd:
     def afficher_niveau(self, niveau=None):
         if niveau is None:
             niveau = self.NIVEAU
-        if niveau == self.MIN:
+        if niveau == self.VIDE:
+            logging.info("Le chaudron est presque vide")
+        elif niveau == self.MIN:
             logging.info("Le niveau est sous le niveau minimum.")
         elif niveau == self.BAS:
             logging.info("Le niveau est bas.")
@@ -160,7 +163,9 @@ class NiveauCtrlCmd:
     def alerter_changement_niveau(self, niveau=None):
         if niveau is None:
             niveau = self.NIVEAU
-        if niveau == self.MIN:
+        if niveau == self.VIDE:
+            self.lancer_alerte_vide()
+        elif niveau == self.MIN:
             self.lancer_alerte_min()
         elif niveau == self.BAS:
             self.lancer_alerte_bas()
@@ -253,19 +258,27 @@ class NiveauCtrlCmd:
 
     def mesurer_niveau(self):
         etat_niv_min = GPIO.input(self.NIV_MIN_R)
+        etat_niv_min_f = GPIO.input(self.NIV_MIN_F)
         etat_niv_bas = GPIO.input(self.NIV_BAS_R)
+        etat_niv_bas_f = GPIO.input(self.NIV_BAS_F)
         etat_niv_haut = GPIO.input(self.NIV_HAUT_R)
+        etat_niv_haut_f = GPIO.input(self.NIV_HAUT_F)
         etat_niv_max = GPIO.input(self.NIV_MAX_R)
+        etat_niv_max_f = GPIO.input(self.NIV_MAX_F)
         if etat_niv_max:
             return self.MAX
-        elif etat_niv_haut:
+        elif etat_niv_haut or etat_niv_max_f:
             return self.HAUT
-        elif etat_niv_bas:
+        elif etat_niv_bas or etat_niv_haut_f:
             return self.NORMAL
-        elif etat_niv_min:
+        elif etat_niv_min or etat_niv_bas_f:
             return self.BAS
-        else:
+        elif etat_niv_bas_f:
             return self.MIN
+        elif etat_niv_min_f:
+            return self.VIDE
+        else:
+            return self.ERREUR
 
     def lire_temperature(self):
         while True:
