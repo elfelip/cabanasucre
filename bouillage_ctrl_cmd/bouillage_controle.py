@@ -310,7 +310,7 @@ def main():
     format = "%(asctime)s: %(message)s"
     logging.basicConfig(
         format=format,
-        level=logging.INFO,
+        level=logging.DEBUG,
         datefmt="%H:%M:%S")
 
     signal.signal(signal.SIGINT, signal_handler)
