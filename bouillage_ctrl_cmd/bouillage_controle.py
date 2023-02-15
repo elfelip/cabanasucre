@@ -280,7 +280,7 @@ class NiveauCtrlCmd:
                     lines = f.readlines()
                     f.close()
                 except FileNotFoundError:
-                    print ("Le fichier n'est pas disponible")
+                    logging.error("Le fichier n'est pas disponible pour la sonde de temperature")
 
             if len(lines) > 0:
                 temperature = int(lines[0])/1000
