@@ -19,21 +19,22 @@ class ConsoleSucrier:
         GPIO.setmode(GPIO.BCM)
         self.kafka_config = obtenirConfigurationsConsommateurDepuisVariablesEnvironnement(logger=logging) if 'BOOTSTRAP_SERVERS' in os.environ else None
         liste_topics = [self.topic_alerte, self.topic_niveau, self.topic_temp]
-        self.consommateur = creerConsommateur(config=self.kafka_config, topics=liste_topics) if self.kafka_config is not None else None
+        self.consommateur = creerConsommateur(config=self.kafka_config.kafka, topics=liste_topics) if self.kafka_config is not None else None
 
     def consommer_messages(self):
         if self.consommateur is None:
             return
         while True:
             msg = self.consommateur.poll(timeout=0.1)
-            if msg.error():
-                logging.error("Erreur Kafka: {0} {1}".format(msg.error().code(), msg.error().str()))
-            if msg.topic() == self.topic_temp:
-                self.afficher_temperature(key=decode_from_bytes(msg.key()), value=decode_from_bytes(msg.value()))
-            elif msg.topic() == self.topic_niveau:
-                self.afficher_niveau(key=decode_from_bytes(msg.key()), value=decode_from_bytes(msg.value()))
-            elif msg.topic() == self.topic_alerte:
-                self.afficher_alerte(key=decode_from_bytes(msg.key()), value=decode_from_bytes(msg.value()))
+            if msg is not None:
+                if msg.error():
+                    logging.error("Erreur Kafka: {0} {1}".format(msg.error().code(), msg.error().str()))
+                if msg.topic() == self.topic_temp:
+                    self.afficher_temperature(key=decode_from_bytes(msg.key()), value=decode_from_bytes(msg.value()))
+                elif msg.topic() == self.topic_niveau:
+                    self.afficher_niveau(key=decode_from_bytes(msg.key()), value=decode_from_bytes(msg.value()))
+                elif msg.topic() == self.topic_alerte:
+                    self.afficher_alerte(key=decode_from_bytes(msg.key()), value=decode_from_bytes(msg.value()))
 
     def afficher_temperature(self, key, value):
         logging.info("{0}: Temperature: {1}".format(key, value))
