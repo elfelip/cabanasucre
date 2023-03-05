@@ -303,13 +303,20 @@ class NiveauCtrlCmd:
             if len(device_folders) > 0:
                 device_folder = device_folders[0]
                 device_file = device_folder + '/temperature'
-                self.logger.info("Le fichier de température est {}".format(device_file))	
-                try:
-                    f = open(device_file, 'r')
-                    lines = f.readlines()
-                    f.close()
-                except FileNotFoundError:
-                    self.logger.error("Le fichier n'est pas disponible pour la sonde de temperature")
+                self.logger.info("Le fichier de température est {}".format(device_file))
+                max_tries = 10
+                for tried in range(max_tries):
+                    try:
+                        f = open(device_file, 'r')
+                        lines = f.readlines()
+                        f.close()
+                    except FileNotFoundError:
+                        if tried < max_tries - 1:
+                            continue
+                        else:
+                            self.logger.error("Le fichier n'est pas disponible pour la sonde de temperature")
+                            raise
+                    break
 
             if len(lines) > 0:
                 temperature = int(lines[0])/1000
