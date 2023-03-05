@@ -313,19 +313,19 @@ class NiveauCtrlCmd:
         return str_maintenant
 
 ctrl_cmd = NiveauCtrlCmd()
-    
+format = "%(asctime)s: %(message)s"
+logging.basicConfig(
+    format=format,
+    level=logging.DEBUG,
+    encoding='utf-8',
+    datefmt="%H:%M:%S")
+
 def signal_handler(sig, frame):
     ctrl_cmd.arreter_pompe()
     GPIO.cleanup()
     sys.exit(0)
 
 def main():
-    format = "%(asctime)s: %(message)s"
-    logging.basicConfig(
-        format=format,
-        level=logging.DEBUG,
-        datefmt="%H:%M:%S")
-
     signal.signal(signal.SIGINT, signal_handler)
     temp_thread = threading.Thread(target=ctrl_cmd.lire_temperature)
     temp_thread.start()
