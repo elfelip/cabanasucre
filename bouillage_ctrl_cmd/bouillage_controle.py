@@ -33,8 +33,23 @@ class NiveauCtrlCmd:
     topic_alerte = "bouillage.alertes"
     topic_temp = "bouillage.temperature"
     producteur = None
+    logger = None
     
     def __init__(self):
+        format = "%(asctime)s: %(message)s"
+        logging.basicConfig(
+            format=format,
+            level=logging.INFO,
+            encoding='utf-8',
+            datefmt="%H:%M:%S")
+        self.logger=logging.getLogger('bouillage_controle')
+        self.logger.setLevel(logging.INFO)
+        console_handler = logging.StreamHandler()
+        console_formatter = logging.Formatter(format)
+        console_handler.setLevel(logging.INFO)
+        console_handler.setFormatter(console_formatter)
+        self.logger.addHandler(console_handler)
+
         self.pompe_en_action = False
         self.connecteurs = [
             {
@@ -108,11 +123,11 @@ class NiveauCtrlCmd:
                 "initial": GPIO.HIGH
             }
         ]
-        logging.info("setmode: {0}".format(self.MODE))
+        self.logger.info("setmode: {0}".format(self.MODE))
         GPIO.setmode(self.MODE)
 
         for connecteur in self.connecteurs:
-            logging.info ("setup connecteur {0} mode: {1}".format(
+            self.logger.info ("setup connecteur {0} mode: {1}".format(
                 connecteur["numero"], 
                 connecteur["mode"]))
             if connecteur["mode"] == GPIO.IN:
@@ -125,7 +140,7 @@ class NiveauCtrlCmd:
         for connecteur in self.connecteurs:
             if connecteur["mode"] == GPIO.IN:
                 if "callback" in connecteur and "detect" in connecteur:
-                    logging.info ("add_event_detect connecteur: {0}, detect {1}, callback : {2}".format(
+                    self.logger.info ("add_event_detect connecteur: {0}, detect {1}, callback : {2}".format(
                         connecteur["numero"], 
                         connecteur["detect"],
                         connecteur["callback"]))
@@ -146,19 +161,19 @@ class NiveauCtrlCmd:
         if niveau is None:
             niveau = self.NIVEAU
         if niveau == self.VIDE:
-            logging.info("Le chaudron est presque vide")
+            self.logger.info("Le chaudron est presque vide")
         elif niveau == self.MIN:
-            logging.info("Le niveau est sous le niveau minimum.")
+            self.logger.info("Le niveau est sous le niveau minimum.")
         elif niveau == self.BAS:
-            logging.info("Le niveau est bas.")
+            self.logger.info("Le niveau est bas.")
         elif niveau == self.NORMAL:
-            logging.info("Le niveau est normal")
+            self.logger.info("Le niveau est normal")
         elif niveau == self.HAUT:
-            logging.info("Le niveau est haut.")
+            self.logger.info("Le niveau est haut.")
         elif niveau == self.MAX:
-            logging.info("Le niveau est au dessus du niveau maximum.")
+            self.logger.info("Le niveau est au dessus du niveau maximum.")
         else:
-            logging.error("Le niveau est inconnu, verifier le systeme.")
+            self.logger.error("Le niveau est inconnu, verifier le systeme.")
             
     def alerter_changement_niveau(self, niveau=None):
         if niveau is None:
@@ -187,55 +202,55 @@ class NiveauCtrlCmd:
             message["value"]["timestamp"] = maintenant
             message["value"]["niveau"] = self.NIVEAU
             message["value"]["message"] = msg
-            publierMessage(producteur=self.producteur,message=message,topic=self.topic_niveau,logger=logging)
+            publierMessage(producteur=self.producteur,message=message,topic=self.topic_niveau,logger=self.logger)
             if alerte:
-                publierMessage(producteur=self.producteur,message=message,topic=self.topic_alerte,logger=logging)
+                publierMessage(producteur=self.producteur,message=message,topic=self.topic_alerte,logger=self.logger)
 
     def lancer_alerte_vide(self):
         msg = "Alerte, Le chaudron est vide."
-        logging.warning(msg=msg)
+        self.logger.warning(msg=msg)
         self.publier_niveau(msg=msg, alerte=True)
             
 
     def lancer_alerte_min(self):
         msg = "Alerte, Le reservoir est au niveau minimum."
-        logging.warning(msg=msg)
+        self.logger.warning(msg=msg)
         self.publier_niveau(msg=msg, alerte=True)
         
     def lancer_alerte_bas(self):
         msg = "Le reservoir est bas."
-        logging.info(msg=msg)
+        self.logger.info(msg=msg)
         self.publier_niveau(msg=msg,alerte=False)
         
         
     def lancer_alerte_normal(self):
         msg = "Le niveau du reservoir est normal pour le bouillage"
-        logging.info(msg=msg)
+        self.logger.info(msg=msg)
         self.publier_niveau(msg=msg, alerte=False)
         
     def lancer_alerte_haut(self):
         msg = "Le niveau du reservoir est haut."
-        logging.info(msg=msg)
+        self.logger.info(msg=msg)
         self.publier_niveau(msg=msg, alerte=False)
 
     def lancer_alerte_max(self):
         msg = "Alerte, le niveau maximal est atteint, il y a probablement un probleme avec la valve."
-        logging.warning(msg=msg)
+        self.logger.warning(msg=msg)
         self.publier_niveau(msg=msg, alerte=True)
 
     def lancer_erreur_niveau(self):
         msg = "Alerte Les informations de niveau sont incoherents. Il doit y avoir un probleme avec la sonde."
-        logging.error(msg=msg)
+        self.logger.error(msg=msg)
         self.publier_niveau(msg=msg, alerte=True)
 
     def demarrer_pompe(self):
-        logging.info("Démarrer la pompe pour ajouter de l'eau.")
+        self.logger.info("Démarrer la pompe pour ajouter de l'eau.")
         if not self.pompe_en_action:
             GPIO.output(self.POMPE, GPIO.LOW)
             self.pompe_en_action = True
         
     def arreter_pompe(self):
-        logging.info("Arrêter la pompe.")
+        self.logger.info("Arrêter la pompe.")
         if self.pompe_en_action:
             GPIO.output(self.POMPE, GPIO.HIGH)
             self.pompe_en_action = False
@@ -244,7 +259,7 @@ class NiveauCtrlCmd:
     def traiter_event_detect_pour_sonde_niveau(self, channel=None):
         nouveau_niveau = self.mesurer_niveau()
         msg = "Niveau avant mesure: {0}. Nouveau niveau {1}".format(self.NIVEAU, nouveau_niveau)
-        logging.info(msg)
+        self.logger.info(msg)
 
         if nouveau_niveau != self.NIVEAU and nouveau_niveau != self.ERREUR:
             if nouveau_niveau < self.NIVEAU and nouveau_niveau <= self.BAS:
@@ -293,11 +308,11 @@ class NiveauCtrlCmd:
                     lines = f.readlines()
                     f.close()
                 except FileNotFoundError:
-                    logging.error("Le fichier n'est pas disponible pour la sonde de temperature")
+                    self.logger.error("Le fichier n'est pas disponible pour la sonde de temperature")
 
             if len(lines) > 0:
                 temperature = int(lines[0])/1000
-                logging.info("La temperature est: {0}".format(temperature))
+                self.logger.info("La temperature est: {0}".format(temperature))
                 if self.producteur is not None:
                     message = {}
                     maintenant = self.maintenant()
@@ -313,12 +328,6 @@ class NiveauCtrlCmd:
         return str_maintenant
 
 ctrl_cmd = NiveauCtrlCmd()
-format = "%(asctime)s: %(message)s"
-logging.basicConfig(
-    format=format,
-    level=logging.DEBUG,
-    encoding='utf-8',
-    datefmt="%H:%M:%S")
 
 def signal_handler(sig, frame):
     ctrl_cmd.arreter_pompe()
