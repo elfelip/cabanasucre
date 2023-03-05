@@ -312,10 +312,10 @@ class NiveauCtrlCmd:
                         f.close()
                     except FileNotFoundError:
                         if tried < max_tries - 1:
+                            sleep(1)
                             continue
                         else:
                             self.logger.error("Le fichier n'est pas disponible pour la sonde de temperature")
-                            raise
                     break
 
             if len(lines) > 0:
