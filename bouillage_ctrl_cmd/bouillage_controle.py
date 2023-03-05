@@ -137,14 +137,6 @@ class NiveauCtrlCmd:
                 initial = connecteur["initial"] if "initial" in connecteur else GPIO.LOW
                 GPIO.setup(connecteur["numero"], connecteur["mode"], initial=initial)
 
-        for connecteur in self.connecteurs:
-            if connecteur["mode"] == GPIO.IN:
-                if "callback" in connecteur and "detect" in connecteur:
-                    self.logger.info ("add_event_detect connecteur: {0}, detect {1}, callback : {2}".format(
-                        connecteur["numero"], 
-                        connecteur["detect"],
-                        connecteur["callback"]))
-                    GPIO.add_event_detect(connecteur["numero"], connecteur["detect"], callback=connecteur["callback"], bouncetime=200)
         self.arreter_pompe()
         self.NIVEAU = self.mesurer_niveau()
         if self.NIVEAU < self.NORMAL:
@@ -155,6 +147,14 @@ class NiveauCtrlCmd:
         os.system('sudo modprobe w1-gpio')
         os.system('sudo modprobe w1-therm')
         self.alerter_changement_niveau(niveau=self.NIVEAU)
+        for connecteur in self.connecteurs:
+            if connecteur["mode"] == GPIO.IN:
+                if "callback" in connecteur and "detect" in connecteur:
+                    self.logger.info ("add_event_detect connecteur: {0}, detect {1}, callback : {2}".format(
+                        connecteur["numero"], 
+                        connecteur["detect"],
+                        connecteur["callback"]))
+                    GPIO.add_event_detect(connecteur["numero"], connecteur["detect"], callback=connecteur["callback"], bouncetime=200)
         
 
     def afficher_niveau(self, niveau=None):
@@ -302,7 +302,8 @@ class NiveauCtrlCmd:
             device_folders = glob.glob(base_dir + '28*')
             if len(device_folders) > 0:
                 device_folder = device_folders[0]
-                device_file = device_folder + '/temperature'	
+                device_file = device_folder + '/temperature'
+                self.logger.info("Le fichier de température est {}".format(device_file))	
                 try:
                     f = open(device_file, 'r')
                     lines = f.readlines()
