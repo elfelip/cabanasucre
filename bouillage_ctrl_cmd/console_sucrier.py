@@ -14,10 +14,25 @@ class ConsoleSucrier:
     topic_niveau = "bouillage.niveau"
     topic_alerte = "bouillage.alertes"
     topic_temp = "bouillage.temperature"
+    logger = None
 
     def __init__(self):
+        format = "%(asctime)s: %(message)s"
+        logging.basicConfig(
+            format=format,
+            level=logging.INFO,
+            encoding='utf-8',
+            datefmt="%H:%M:%S")
+        self.logger=logging.getLogger('console_sucrier')
+        self.logger.setLevel(logging.INFO)
+        console_handler = logging.StreamHandler()
+        console_formatter = logging.Formatter(format)
+        console_handler.setLevel(logging.INFO)
+        console_handler.setFormatter(console_formatter)
+        self.logger.addHandler(console_handler)
+
         GPIO.setmode(GPIO.BCM)
-        self.kafka_config = obtenirConfigurationsConsommateurDepuisVariablesEnvironnement(logger=logging) if 'BOOTSTRAP_SERVERS' in os.environ else None
+        self.kafka_config = obtenirConfigurationsConsommateurDepuisVariablesEnvironnement(logger=self.logger) if 'BOOTSTRAP_SERVERS' in os.environ else None
         liste_topics = [self.topic_alerte, self.topic_niveau, self.topic_temp]
         self.consommateur = creerConsommateur(config=self.kafka_config.kafka, topics=liste_topics) if self.kafka_config is not None else None
 
@@ -28,7 +43,7 @@ class ConsoleSucrier:
             msg = self.consommateur.poll(timeout=0.1)
             if msg is not None:
                 if msg.error():
-                    logging.error("Erreur Kafka: {0} {1}".format(msg.error().code(), msg.error().str()))
+                    self.logger.error("Erreur Kafka: {0} {1}".format(msg.error().code(), msg.error().str()))
                 if msg.topic() == self.topic_temp:
                     self.afficher_temperature(key=decode_from_bytes(msg.key()), value=decode_from_bytes(msg.value()))
                 elif msg.topic() == self.topic_niveau:
@@ -37,13 +52,13 @@ class ConsoleSucrier:
                     self.afficher_alerte(key=decode_from_bytes(msg.key()), value=decode_from_bytes(msg.value()))
 
     def afficher_temperature(self, key, value):
-        logging.info("{0}: Temperature: {1}".format(key, value))
+        self.logger.info("{0}: Temperature: {1}".format(key, value))
 
     def afficher_niveau(self, key, value):
-        logging.info("{0}: Niveau: {1} {2}".format(key, value['niveau'], value['message']))
+        self.logger.info("{0}: Niveau: {1} {2}".format(key, value['niveau'], value['message']))
 
     def afficher_alerte(self, key, value):
-        logging.warning("{0}: Niveau: {1} {2}".format(key, value['niveau'], value['message']))
+        self.logger.warning("{0}: Niveau: {1} {2}".format(key, value['niveau'], value['message']))
     
 def signal_handler(sig, frame):
         GPIO.cleanup()
