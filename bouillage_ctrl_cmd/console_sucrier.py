@@ -33,6 +33,8 @@ class ConsoleSucrier:
 
         GPIO.setmode(GPIO.BCM)
         self.kafka_config = obtenirConfigurationsConsommateurDepuisVariablesEnvironnement(logger=self.logger) if 'BOOTSTRAP_SERVERS' in os.environ else None
+        if self.kafka_config is not None:
+            self.kafka_config['auto_offset_reset'] = 'latest'
         liste_topics = [self.topic_alerte, self.topic_niveau, self.topic_temp]
         self.consommateur = creerConsommateur(config=self.kafka_config.kafka, topics=liste_topics) if self.kafka_config is not None else None
 
