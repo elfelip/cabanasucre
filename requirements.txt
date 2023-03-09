@@ -1,1 +1,2 @@
+confluent-kafka==1.8.2
 inspqcommun==1.3.3
