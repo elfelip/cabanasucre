@@ -71,15 +71,15 @@ class ConsoleSucrier:
 
     def afficher_temperature(self, key, value):
         self.logger.info("{0}: Temperature: {1}".format(key, value))
-        self.display.lcd_display_string("Temp: {temp} °C".format(temp=value), self.ligne_temp)
+        self.display.lcd_display_string("Temp: {temp} C          ".format(temp=value), self.ligne_temp)
 
     def afficher_niveau(self, key, value):
         self.logger.info("{0}: Niveau: {1} {2}".format(key, value['niveau'], value['message']))
-        self.display.lcd_display_string("Niv: {niveau}".format(niveau=value['niveau']), self.ligne_niveau)
+        self.display.lcd_display_string("Niv: {niveau}           ".format(niveau=value['niveau']), self.ligne_niveau)
 
     def afficher_alerte(self, key, value):
         self.logger.warning("{0}: Alerte niveau: {1} {2}".format(key, value['niveau'], value['message']))
-        self.display.lcd_display_string("Alerte: {niveau}".format(niveau=value['niveau']), self.ligne_alerte)
+        self.display.lcd_display_string("Alerte: {niveau}        ".format(niveau=value['niveau']), self.ligne_alerte)
 
 
     def afficher_message_accueil(self):
