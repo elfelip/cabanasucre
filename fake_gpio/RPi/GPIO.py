@@ -10,6 +10,7 @@ RISING = 6
 FALLING = 7
 HIGH = 1
 LOW = 0
+RPI_REVISION = 1
 
 def setmode(mode):
     pass
