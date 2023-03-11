@@ -11,6 +11,7 @@ import os
 from inspqcommun.kafka.consommateur import obtenirConfigurationsConsommateurDepuisVariablesEnvironnement, creerConsommateur, decode_from_bytes
 from confluent_kafka import OFFSET_END, Consumer
 import drivers
+import argparse
 
 class ConsoleSucrier:
     topic_niveau = "bouillage.niveau"
@@ -22,27 +23,21 @@ class ConsoleSucrier:
     ligne_temp = 2
     ligne_alerte = 1
 
-    def __init__(self):
+    def __init__(self, log_level=logging.INFO):
         format = "%(asctime)s: %(message)s"
         logging.basicConfig(
             format=format,
-            level=logging.INFO,
+            level=log_level,
             encoding='utf-8',
             datefmt="%H:%M:%S")
         self.logger=logging.getLogger('console_sucrier')
-        self.logger.setLevel(logging.INFO)
-        #console_handler = logging.StreamHandler()
-        #console_formatter = logging.Formatter(format)
-        #console_handler.setLevel(logging.INFO)
-        #console_handler.setFormatter(console_formatter)
-        #self.logger.addHandler(console_handler)
+        self.logger.setLevel(log_level)
 
         GPIO.setmode(GPIO.BCM)
         self.kafka_config = obtenirConfigurationsConsommateurDepuisVariablesEnvironnement(logger=self.logger) if 'BOOTSTRAP_SERVERS' in os.environ else None
         if self.kafka_config is not None:
             self.kafka_config.kafka['auto.offset.reset'] = OFFSET_END
             liste_topics = [self.topic_alerte, self.topic_niveau, self.topic_temp]
-            #self.consommateur = creerConsommateur(config=self.kafka_config.kafka, topics=liste_topics) if self.kafka_config is not None else None
             self.consommateur = Consumer(self.kafka_config.kafka)
             self.consommateur.subscribe(liste_topics, on_assign=self.reset_offset)
         self.display = drivers.Lcd()
@@ -81,8 +76,8 @@ class ConsoleSucrier:
 
     def afficher_alerte(self, key, value):
         self.logger.warning("{0}: Alerte niveau: {1} {2}".format(key, value['niveau'], value['message']))
-        #self.display.lcd_display_string("Alerte: {niveau}".format(niveau=self.get_nom_niveau(value['niveau'])).ljust(16),
-        #                                self.ligne_alerte)
+        self.display.lcd_display_string("Alerte: {niveau}".format(niveau=self.get_nom_niveau(value['niveau'])).ljust(16),
+                                        self.ligne_alerte)
 
     def afficher_message_accueil(self):
         message_ligne_1 = "Console Sucrier".ljust(16)
@@ -106,7 +101,7 @@ class ConsoleSucrier:
             return "MAX"
         return "ERREUR"
     
-sucrier = ConsoleSucrier()
+sucrier = None
 
 def signal_handler(sig, frame):
         GPIO.cleanup()
@@ -114,6 +109,14 @@ def signal_handler(sig, frame):
         sys.exit(0)
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument( '-log',
+                        '--loglevel',
+                        default='info',
+                        help='Provide logging level. Example --loglevel debug, default=info' )
+
+    args = parser.parse_args()
+    sucrier = ConsoleSucrier(log_level=args.loglevel.upper())
     signal.signal(signal.SIGINT, signal_handler)
     consumer_thread = threading.Thread(target=sucrier.consommer_messages)
     consumer_thread.start()

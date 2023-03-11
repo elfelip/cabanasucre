@@ -333,7 +333,6 @@ def main():
     signal.signal(signal.SIGINT, signal_handler)
     temp_thread = threading.Thread(target=ctrl_cmd.lire_temperature)
     temp_thread.start()
-    #signal.pause()
 
 if __name__ == "__main__":
     main()
