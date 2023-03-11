@@ -34,37 +34,37 @@ class NiveauCtrlCmd:
             "niveau": VIDE,
             "alerte": True,
             "display": "VIDE",
-            "messsage": "Le chaudron est vide"
+            "message": "Le chaudron est vide"
         },
         {
             "niveau": MIN,
             "alerte": True,
             "display": "MIN",
-            "messsage": "Le niveau du chaudron est au minimum"
+            "message": "Le niveau du chaudron est au minimum"
         },
         {
             "niveau": BAS,
             "alerte": False,
             "display": "BAS",
-            "messsage": "Le niveau du chaudron est bas"
+            "message": "Le niveau du chaudron est bas"
         },
         {
             "niveau": NORMAL,
             "alerte": False,
             "display": "NORMAL",
-            "messsage": "Le niveau du chaudron est normal pour le bouillage"
+            "message": "Le niveau du chaudron est normal pour le bouillage"
         },
         {
             "niveau": HAUT,
             "alerte": False,
             "display": "HAUT",
-            "messsage": "Le niveau du chaudron est haut"
+            "message": "Le niveau du chaudron est haut"
         },
         {
             "niveau": MAX,
             "alerte": True,
             "display": "MAX",
-            "messsage": "Le niveau du chaudron est au maximum, vérifier la pompe."
+            "message": "Le niveau du chaudron est au maximum, vérifier la pompe."
         }
     ]
     MODE = GPIO.BCM # GPIO.BOARD
