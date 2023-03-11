@@ -77,8 +77,8 @@ metadata:
     strimzi.io/cluster: kafkabanasucre
   namespace: cabanasucre 
 spec: 
-  partitions: 3
-  replicas: 2
+  partitions: 1
+  replicas: 3
   config:
     cleanup.policy: delete
     retention.ms: -1
@@ -90,11 +90,11 @@ kind: KafkaTopic
 metadata:
   name: bouillage.niveau
   labels:
-    strimzi.io/cluster: kafkabanasucre
+    strimzi.io/cluster: kafkabanasucres
   namespace: cabanasucre 
 spec: 
-  partitions: 3
-  replicas: 2
+  partitions: 1
+  replicas: 3
   config:
     cleanup.policy: delete
     retention.ms: -1
@@ -109,8 +109,8 @@ metadata:
     strimzi.io/cluster: kafkabanasucre
   namespace: cabanasucre 
 spec: 
-  partitions: 3
-  replicas: 2
+  partitions: 1
+  replicas: 3
   config:
     cleanup.policy: delete
     retention.ms: -1
