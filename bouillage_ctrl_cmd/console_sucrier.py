@@ -71,40 +71,50 @@ class ConsoleSucrier:
 
     def afficher_temperature(self, key, value):
         self.logger.info("{0}: Temperature: {1}".format(key, value))
-        self.display.lcd_display_string("Temp: {temp} C          ".format(temp=value), self.ligne_temp)
+        self.display.lcd_display_string("Temp: {temp} C".format(temp=value).ljust(16),
+                                        self.ligne_temp)
 
     def afficher_niveau(self, key, value):
         self.logger.info("{0}: Niveau: {1} {2}".format(key, value['niveau'], value['message']))
-        self.display.lcd_display_string("Niv: {niveau}           ".format(niveau=value['niveau']), self.ligne_niveau)
+        self.display.lcd_display_string("Niv: {niveau}".format(niveau=self.get_nom_niveau(value['niveau'])).ljust(16),
+                                        self.ligne_niveau)
 
     def afficher_alerte(self, key, value):
         self.logger.warning("{0}: Alerte niveau: {1} {2}".format(key, value['niveau'], value['message']))
-        self.display.lcd_display_string("Alerte: {niveau}        ".format(niveau=value['niveau']), self.ligne_alerte)
-
+        self.display.lcd_display_string("Alerte: {niveau}".format(niveau=self.get_nom_niveau(value['niveau'])).ljust(16),
+                                        self.ligne_alerte)
 
     def afficher_message_accueil(self):
-        message_ligne_1 = "Console Sucrier"
-        message_ligne_2 = "Attente controleur"
+        message_ligne_1 = "Console Sucrier".ljust(16)
+        message_ligne_2 = "Attente msg...".ljust(16)
         self.logger.info(message_ligne_1 + ' ' + message_ligne_2)
         self.display.lcd_display_string(message_ligne_1, 1)
         self.display.lcd_display_string(message_ligne_2, 2)
+
+    def get_nom_niveau(self, niveau):
+        if niveau == 0:
+            return "VIDE"
+        if niveau == 1:
+            return "BAS"
+        if niveau == 2:
+            return "NORMAL"
+        if niveau == 3:
+            return "HAUT"
+        if niveau == 4:
+            return "MAX"
+        return "ERREUR"
     
+sucrier = ConsoleSucrier()
+
 def signal_handler(sig, frame):
         GPIO.cleanup()
+        sucrier.display.lcd_clear()
         sys.exit(0)
 
 def main():
-    format = "%(asctime)s: %(message)s"
-    logging.basicConfig(
-        format=format,
-        level=logging.INFO,
-        datefmt="%H:%M:%S")
-
-    sucrier = ConsoleSucrier()
     signal.signal(signal.SIGINT, signal_handler)
     consumer_thread = threading.Thread(target=sucrier.consommer_messages)
     consumer_thread.start()
-    #signal.pause()
 
 if __name__ == "__main__":
     main()
