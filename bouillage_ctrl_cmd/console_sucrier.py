@@ -81,8 +81,8 @@ class ConsoleSucrier:
 
     def afficher_alerte(self, key, value):
         self.logger.warning("{0}: Alerte niveau: {1} {2}".format(key, value['niveau'], value['message']))
-        self.display.lcd_display_string("Alerte: {niveau}".format(niveau=self.get_nom_niveau(value['niveau'])).ljust(16),
-                                        self.ligne_alerte)
+        #self.display.lcd_display_string("Alerte: {niveau}".format(niveau=self.get_nom_niveau(value['niveau'])).ljust(16),
+        #                                self.ligne_alerte)
 
     def afficher_message_accueil(self):
         message_ligne_1 = "Console Sucrier".ljust(16)

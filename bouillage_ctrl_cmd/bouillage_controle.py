@@ -216,7 +216,7 @@ class NiveauCtrlCmd:
     def lancer_alerte_bas(self):
         msg = "Le reservoir est bas."
         self.logger.info(msg=msg)
-        self.publier_niveau(msg=msg,alerte=False)
+        self.publier_niveau(msg=msg, alerte=False)
         
         
     def lancer_alerte_normal(self):
