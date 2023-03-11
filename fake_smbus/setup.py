@@ -9,12 +9,10 @@ setup(
     url='https://github.com/elfelip/cabanasucre.git',
     author='Philippe Gauthier',
     author_email='elfelip@yahoo.com',
-    # Needed to actually package something
-    packages=['SMBus'],
     # Needed for dependencies
     install_requires=[],
     # *strongly* suggested for sharing
-    version='0.0.1',
+    version='0.0.2',
     #version_command=('git describe', "pep440-git-local"),
     # The license can be anything you like
     license='',

@@ -1,6 +1,6 @@
 class SMBus:
-    def __init__(self, bus=0):
-        pass
+    def __init__(self, bus):
+        self.bus = bus
 
     def write_byte(self, addr, cmd):
         pass
