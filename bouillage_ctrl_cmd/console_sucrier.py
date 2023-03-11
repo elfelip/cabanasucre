@@ -95,11 +95,11 @@ class ConsoleSucrier:
         if niveau == 0:
             return "VIDE"
         if niveau == 1:
-            return "BAS"
+            return "MIN"
         if niveau == 2:
-            return "NORMAL"
+            return "BAS"
         if niveau == 3:
-            return "HAUT"
+            return "NORMAL"
         if niveau == 4:
             return "MAX"
         return "ERREUR"
