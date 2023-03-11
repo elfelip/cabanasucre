@@ -29,6 +29,44 @@ class NiveauCtrlCmd:
     HAUT = 4
     MAX = 5
     NIVEAU = 0
+    info_niveaux = [
+        {
+            "niveau": VIDE,
+            "alerte": True,
+            "display": "VIDE",
+            "messsage": "Le chaudron est vide"
+        },
+        {
+            "niveau": MIN,
+            "alerte": True,
+            "display": "MIN",
+            "messsage": "Le niveau du chaudron est au minimum"
+        },
+        {
+            "niveau": BAS,
+            "alerte": False,
+            "display": "BAS",
+            "messsage": "Le niveau du chaudron est bas"
+        },
+        {
+            "niveau": NORMAL,
+            "alerte": False,
+            "display": "NORMAL",
+            "messsage": "Le niveau du chaudron est normal pour le bouillage"
+        },
+        {
+            "niveau": HAUT,
+            "alerte": False,
+            "display": "HAUT",
+            "messsage": "Le niveau du chaudron est haut"
+        },
+        {
+            "niveau": MAX,
+            "alerte": True,
+            "display": "MAX",
+            "messsage": "Le niveau du chaudron est au maximum, vérifier la pompe."
+        }
+    ]
     MODE = GPIO.BCM # GPIO.BOARD
     topic_niveau = "bouillage.niveau"
     topic_alerte = "bouillage.alertes"
@@ -142,7 +180,7 @@ class NiveauCtrlCmd:
         self.producteur = creerProducteur(config=self.kafka_config) if "bootstrap.servers" in self.kafka_config else None
         os.system('sudo modprobe w1-gpio')
         os.system('sudo modprobe w1-therm')
-        self.alerter_changement_niveau(niveau=self.NIVEAU)
+        self.publier_niveau(niveau=self.NIVEAU)
         for connecteur in self.connecteurs:
             if connecteur["mode"] == GPIO.IN:
                 if "callback" in connecteur and "detect" in connecteur:
@@ -156,88 +194,28 @@ class NiveauCtrlCmd:
     def afficher_niveau(self, niveau=None):
         if niveau is None:
             niveau = self.NIVEAU
-        if niveau == self.VIDE:
-            self.logger.info("Le chaudron est presque vide")
-        elif niveau == self.MIN:
-            self.logger.info("Le niveau est sous le niveau minimum.")
-        elif niveau == self.BAS:
-            self.logger.info("Le niveau est bas.")
-        elif niveau == self.NORMAL:
-            self.logger.info("Le niveau est normal")
-        elif niveau == self.HAUT:
-            self.logger.info("Le niveau est haut.")
-        elif niveau == self.MAX:
-            self.logger.info("Le niveau est au dessus du niveau maximum.")
+
+        if self.info_niveaux[niveau]["alerte"]:
+            self.logger.warning("Niveau: {niveau} {message}".format(niveau=self.info_niveaux[niveau]["display"], message=self.info_niveaux[niveau]["message"]))
         else:
-            self.logger.error("Le niveau est inconnu, verifier le systeme.")
+            self.logger.info("Niveau: {niveau} {message}".format(niveau=self.info_niveaux[niveau]["display"], message=self.info_niveaux[niveau]["message"]))
             
-    def alerter_changement_niveau(self, niveau=None):
+
+    def publier_niveau(self, niveau=None):
         if niveau is None:
             niveau = self.NIVEAU
-        if niveau == self.VIDE:
-            self.lancer_alerte_vide()
-        elif niveau == self.MIN:
-            self.lancer_alerte_min()
-        elif niveau == self.BAS:
-            self.lancer_alerte_bas()
-        elif niveau == self.NORMAL:
-            self.lancer_alerte_normal()
-        elif niveau == self.HAUT:
-            self.lancer_alerte_haut()
-        elif niveau == self.MAX:
-            self.lancer_alerte_max()
-        else:
-            self.lancer_erreur_niveau()
 
-    def publier_niveau(self, msg, alerte=False):
         if self.producteur is not None:
             maintenant = self.maintenant()
             message = {}
             message["key"] = maintenant
             message["value"] = {}
             message["value"]["timestamp"] = maintenant
-            message["value"]["niveau"] = self.NIVEAU
-            message["value"]["message"] = msg
+            message["value"]["niveau"] = niveau
+            message["value"]["message"] = self.info_niveaux[niveau]["message"]
             publierMessage(producteur=self.producteur,message=message,topic=self.topic_niveau,logger=self.logger)
-            if alerte:
+            if self.info_niveaux[niveau]["alerte"]:
                 publierMessage(producteur=self.producteur,message=message,topic=self.topic_alerte,logger=self.logger)
-
-    def lancer_alerte_vide(self):
-        msg = "Alerte, Le chaudron est vide."
-        self.logger.warning(msg=msg)
-        self.publier_niveau(msg=msg, alerte=True)
-            
-
-    def lancer_alerte_min(self):
-        msg = "Alerte, Le reservoir est au niveau minimum."
-        self.logger.warning(msg=msg)
-        self.publier_niveau(msg=msg, alerte=True)
-        
-    def lancer_alerte_bas(self):
-        msg = "Le reservoir est bas."
-        self.logger.info(msg=msg)
-        self.publier_niveau(msg=msg, alerte=False)
-        
-        
-    def lancer_alerte_normal(self):
-        msg = "Le niveau du reservoir est normal pour le bouillage"
-        self.logger.info(msg=msg)
-        self.publier_niveau(msg=msg, alerte=False)
-        
-    def lancer_alerte_haut(self):
-        msg = "Le niveau du reservoir est haut."
-        self.logger.info(msg=msg)
-        self.publier_niveau(msg=msg, alerte=False)
-
-    def lancer_alerte_max(self):
-        msg = "Alerte, le niveau maximal est atteint, il y a probablement un probleme avec la pompe."
-        self.logger.warning(msg=msg)
-        self.publier_niveau(msg=msg, alerte=True)
-
-    def lancer_erreur_niveau(self):
-        msg = "Alerte Les informations de niveau sont incoherents. Il doit y avoir un probleme avec la sonde."
-        self.logger.error(msg=msg)
-        self.publier_niveau(msg=msg, alerte=True)
 
     def demarrer_pompe(self):
         self.logger.info("Démarrer la pompe pour ajouter de l'eau.")
@@ -263,7 +241,7 @@ class NiveauCtrlCmd:
             elif nouveau_niveau > self.NIVEAU and nouveau_niveau >= self.HAUT:
                 self.arreter_pompe()
             self.afficher_niveau(niveau=nouveau_niveau)
-            self.alerter_changement_niveau(niveau=nouveau_niveau)
+            self.publier_niveau(niveau=nouveau_niveau)
         self.NIVEAU = nouveau_niveau
             
 
