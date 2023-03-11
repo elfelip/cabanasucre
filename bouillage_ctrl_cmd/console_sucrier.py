@@ -101,6 +101,8 @@ class ConsoleSucrier:
         if niveau == 3:
             return "NORMAL"
         if niveau == 4:
+            return "HAUT"
+        if niveau == 5:
             return "MAX"
         return "ERREUR"
     
