@@ -273,13 +273,21 @@ class NiveauCtrlCmd:
 
     def mesurer_niveau(self):
         etat_niv_min = GPIO.input(self.NIV_MIN_R)
+        self.logger.debug("etat_niv_min={}".format(etat_niv_min))
         etat_niv_min_f = GPIO.input(self.NIV_MIN_F)
+        self.logger.debug("etat_niv_min_f={}".format(etat_niv_min_f))
         etat_niv_bas = GPIO.input(self.NIV_BAS_R)
+        self.logger.debug("etat_niv_bas={}".format(etat_niv_bas))
         etat_niv_bas_f = GPIO.input(self.NIV_BAS_F)
+        self.logger.debug("etat_niv_bas_f={}".format(etat_niv_bas_f))
         etat_niv_haut = GPIO.input(self.NIV_HAUT_R)
+        self.logger.debug("etat_niv_haut={}".format(etat_niv_haut))
         etat_niv_haut_f = GPIO.input(self.NIV_HAUT_F)
+        self.logger.debug("etat_niv_haut_f={}".format(etat_niv_haut_f))
         etat_niv_max = GPIO.input(self.NIV_MAX_R)
+        self.logger.debug("etat_niv_max={}".format(etat_niv_max))
         etat_niv_max_f = GPIO.input(self.NIV_MAX_F)
+        self.logger.debug("etat_niv_max_f={}".format(etat_niv_max_f))
         if etat_niv_max:
             return self.MAX
         elif etat_niv_haut or etat_niv_max_f:
