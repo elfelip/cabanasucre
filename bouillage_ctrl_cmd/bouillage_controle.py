@@ -230,7 +230,7 @@ class NiveauCtrlCmd:
         self.publier_niveau(msg=msg, alerte=False)
 
     def lancer_alerte_max(self):
-        msg = "Alerte, le niveau maximal est atteint, il y a probablement un probleme avec la valve."
+        msg = "Alerte, le niveau maximal est atteint, il y a probablement un probleme avec la pompe."
         self.logger.warning(msg=msg)
         self.publier_niveau(msg=msg, alerte=True)
 
