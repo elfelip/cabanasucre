@@ -9,6 +9,7 @@ import logging
 import threading
 import os
 from inspqcommun.kafka.producteur import obtenirConfigurationsProducteurDepuisVariablesEnvironnement, creerProducteur, publierMessage
+import argparse
 
 class NiveauCtrlCmd:
     NIV_MIN_R = 5 # 29
@@ -35,20 +36,15 @@ class NiveauCtrlCmd:
     producteur = None
     logger = None
     
-    def __init__(self):
+    def __init__(self, log_level=logging.INFO):
         format = "%(asctime)s: %(message)s"
         logging.basicConfig(
             format=format,
-            level=logging.INFO,
+            level=log_level,
             encoding='utf-8',
             datefmt="%H:%M:%S")
         self.logger=logging.getLogger('bouillage_controle')
-        self.logger.setLevel(logging.INFO)
-        console_handler = logging.StreamHandler()
-        console_formatter = logging.Formatter(format)
-        console_handler.setLevel(logging.INFO)
-        console_handler.setFormatter(console_formatter)
-        self.logger.addHandler(console_handler)
+        self.logger.setLevel(log_level)
 
         self.pompe_en_action = False
         self.connecteurs = [
@@ -290,18 +286,14 @@ class NiveauCtrlCmd:
         self.logger.debug("etat_niv_max_f={}".format(etat_niv_max_f))
         if etat_niv_max:
             return self.MAX
-        elif etat_niv_haut or etat_niv_max_f:
+        elif etat_niv_haut:
             return self.HAUT
-        elif etat_niv_bas or etat_niv_haut_f:
+        elif etat_niv_bas:
             return self.NORMAL
-        elif etat_niv_min or etat_niv_bas_f:
+        elif etat_niv_min:
             return self.BAS
-        elif etat_niv_bas_f:
-            return self.MIN
-        elif etat_niv_min_f:
-            return self.VIDE
         else:
-            return self.ERREUR
+            return self.MIN
 
     def lire_temperature(self):
         while True:
@@ -343,7 +335,7 @@ class NiveauCtrlCmd:
         str_maintenant = strftime("%Y-%m-%d:%H:%M:%S", localtime())
         return str_maintenant
 
-ctrl_cmd = NiveauCtrlCmd()
+ctrl_cmd = None
 
 def signal_handler(sig, frame):
     ctrl_cmd.arreter_pompe()
@@ -351,6 +343,15 @@ def signal_handler(sig, frame):
     sys.exit(0)
 
 def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument( '-log',
+                        '--loglevel',
+                        default='info',
+                        help='Provide logging level. Example --loglevel debug, default=info' )
+
+    args = parser.parse_args()
+
+    ctrl_cmd = NiveauCtrlCmd(log_level=args.loglevel.upper())
     signal.signal(signal.SIGINT, signal_handler)
     temp_thread = threading.Thread(target=ctrl_cmd.lire_temperature)
     temp_thread.start()
