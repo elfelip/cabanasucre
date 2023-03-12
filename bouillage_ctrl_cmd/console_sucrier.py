@@ -84,7 +84,7 @@ class ConsoleSucrier:
 
     def calculer_temperature_base(self, temp):
         if len(self.dernieres_temperatures) < self.nb_mesures_temp_pour_calcule_base:
-            self.dernieres_temperatures.add(temp)
+            self.dernieres_temperatures.append(temp)
         else:
             for mesure in range(self.nb_mesures_temp_pour_calcule_base - 1):
                 self.dernieres_temperatures[mesure] = self.dernieres_temperatures[mesure + 1]
