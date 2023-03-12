@@ -275,13 +275,13 @@ class NiveauCtrlCmd:
             niveau = self.MIN
 
         if ((channel == self.NIV_MIN_F and etat_niv_min_f == 0) or
-            (channel == self.NIV_MIN and etat_niv_min == 0) or
+            (channel == self.NIV_MIN_R and etat_niv_min == 0) or
             (channel == self.NIV_BAS_F and etat_niv_bas_f == 0) or    
-            (channel == self.NIV_BAS and etat_niv_bas == 0) or
+            (channel == self.NIV_BAS_R and etat_niv_bas == 0) or
             (channel == self.NIV_HAUT_F and etat_niv_haut_f == 0) or    
-            (channel == self.NIV_HAUT and etat_niv_haut == 0) or
+            (channel == self.NIV_HAUT_R and etat_niv_haut == 0) or
             (channel == self.NIV_MAX_F and etat_niv_max_f == 0) or    
-            (channel == self.NIV_MAX and etat_niv_max == 0)):
+            (channel == self.NIV_MAX_R and etat_niv_max == 0)):
             self.direction = "descendant"
         else:
             self.direction = "montant"
