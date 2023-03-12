@@ -21,7 +21,7 @@ class ConsoleSucrier:
     consommateur = None
     ligne_niveau = 1
     ligne_temp = 2
-    ligne_alerte = 1
+    ligne_alerte = 2
     dernieres_temperatures = []
     nb_mesures_temp_pour_calcule_base = 3
     ecart_pour_fin_bouillage = 3
@@ -84,14 +84,19 @@ class ConsoleSucrier:
 
     def calculer_temperature_base(self, temp):
         if len(self.dernieres_temperatures) < self.nb_mesures_temp_pour_calcule_base:
+            self.logger.debug("Ajout {temp} dans dernieres temperatures".format(temp=temp))
             self.dernieres_temperatures.append(temp)
         else:
+            self.logger.debug("Remplacer {temp1} par {temp2} dans dernieres temperatures".format(
+                temp1=self.dernieres_temperatures[0],
+                temp2=temp))
             for mesure in range(self.nb_mesures_temp_pour_calcule_base - 1):
                 self.dernieres_temperatures[mesure] = self.dernieres_temperatures[mesure + 1]
             self.dernieres_temperatures[self.nb_mesures_temp_pour_calcule_base - 1] = temp
 
         if len(self.dernieres_temperatures) >= self.nb_mesures_temp_pour_calcule_base and temp > 95:
             ecart_type = pstdev(self.dernieres_temperatures)
+            self.logger.debug("Ecart type temp: {ecart}".format(ecart=ecart_type))
             if ecart_type < 0.25:
                 self.temperature_base = mean(self.dernieres_temperatures)
                 self.logger.info("Temperature de base établi à {temp}".format(temp=self.temperature_base))
