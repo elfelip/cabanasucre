@@ -263,28 +263,28 @@ class NiveauCtrlCmd:
         self.logger.debug("etat_niv_max_f={}".format(etat_niv_max_f))
 
         niveau = None
-        if etat_niv_max:
+        if etat_niv_max or etat_niv_max_f:
             niveau = self.MAX
-        elif etat_niv_haut:
+        elif etat_niv_haut or etat_niv_haut_f:
             niveau = self.HAUT
-        elif etat_niv_bas:
+        elif etat_niv_bas or etat_niv_bas_f:
             niveau = self.NORMAL
-        elif etat_niv_min:
+        elif etat_niv_min or etat_niv_min_f:
             niveau = self.BAS
         else:
             niveau = self.MIN
 
-        if ((channel == self.NIV_MIN_F and etat_niv_min_f == 0) or
-            (channel == self.NIV_MIN_R and etat_niv_min == 0) or
-            (channel == self.NIV_BAS_F and etat_niv_bas_f == 0) or    
-            (channel == self.NIV_BAS_R and etat_niv_bas == 0) or
-            (channel == self.NIV_HAUT_F and etat_niv_haut_f == 0) or    
-            (channel == self.NIV_HAUT_R and etat_niv_haut == 0) or
-            (channel == self.NIV_MAX_F and etat_niv_max_f == 0) or    
-            (channel == self.NIV_MAX_R and etat_niv_max == 0)):
-            self.direction = "descendant"
-        else:
+        if ((channel == self.NIV_MIN_F and etat_niv_min_f) or
+            (channel == self.NIV_MIN_R and etat_niv_min) or
+            (channel == self.NIV_BAS_F and etat_niv_bas_f) or    
+            (channel == self.NIV_BAS_R and etat_niv_bas) or
+            (channel == self.NIV_HAUT_F and etat_niv_haut_f) or    
+            (channel == self.NIV_HAUT_R and etat_niv_haut) or
+            (channel == self.NIV_MAX_F and etat_niv_max_f) or    
+            (channel == self.NIV_MAX_R and etat_niv_max)):
             self.direction = "montant"
+        else:
+            self.direction = "descendant"
 
         self.last_event = channel
         self.logger.debug("Direction: {direction}".format(direction=self.direction))
