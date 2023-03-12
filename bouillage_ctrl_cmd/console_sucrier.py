@@ -84,7 +84,14 @@ class ConsoleSucrier:
         self.display.lcd_display_string(message_ligne_1, 1)
         self.display.lcd_display_string(message_ligne_2, 2)
     
-sucrier = None
+parser = argparse.ArgumentParser()
+parser.add_argument( '-log',
+                    '--loglevel',
+                    default='info',
+                    help='Provide logging level. Example --loglevel debug, default=info' )
+
+args = parser.parse_args()
+sucrier = ConsoleSucrier(log_level=args.loglevel.upper())
 
 def signal_handler(sig, frame):
         GPIO.cleanup()
@@ -92,14 +99,6 @@ def signal_handler(sig, frame):
         sys.exit(0)
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument( '-log',
-                        '--loglevel',
-                        default='info',
-                        help='Provide logging level. Example --loglevel debug, default=info' )
-
-    args = parser.parse_args()
-    sucrier = ConsoleSucrier(log_level=args.loglevel.upper())
     signal.signal(signal.SIGINT, signal_handler)
     consumer_thread = threading.Thread(target=sucrier.consommer_messages)
     consumer_thread.start()

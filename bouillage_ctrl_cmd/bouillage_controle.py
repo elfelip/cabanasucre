@@ -329,7 +329,15 @@ class NiveauCtrlCmd:
         str_maintenant = strftime("%Y-%m-%d:%H:%M:%S", localtime())
         return str_maintenant
 
-ctrl_cmd = None
+parser = argparse.ArgumentParser()
+parser.add_argument( '-log',
+                    '--loglevel',
+                    default='info',
+                    help='Provide logging level. Example --loglevel debug, default=info' )
+
+args = parser.parse_args()
+
+ctrl_cmd = NiveauCtrlCmd(log_level=args.loglevel.upper())
 
 def signal_handler(sig, frame):
     ctrl_cmd.arreter_pompe()
@@ -337,15 +345,6 @@ def signal_handler(sig, frame):
     sys.exit(0)
 
 def main():
-    parser = argparse.ArgumentParser()
-    parser.add_argument( '-log',
-                        '--loglevel',
-                        default='info',
-                        help='Provide logging level. Example --loglevel debug, default=info' )
-
-    args = parser.parse_args()
-
-    ctrl_cmd = NiveauCtrlCmd(log_level=args.loglevel.upper())
     signal.signal(signal.SIGINT, signal_handler)
     temp_thread = threading.Thread(target=ctrl_cmd.lire_temperature)
     temp_thread.start()
