@@ -73,6 +73,7 @@ class NiveauCtrlCmd:
     topic_temp = "bouillage.temperature"
     producteur = None
     logger = None
+    last_event = None
     
     def __init__(self, log_level=logging.INFO):
         format = "%(asctime)s: %(message)s"
@@ -229,7 +230,7 @@ class NiveauCtrlCmd:
 
     def traiter_event_detect_pour_sonde_niveau(self, channel=None):
         self.logger.debug("traiter_event_detect_pour_sonde_niveau channel: {channel}".format(channel=channel))
-        nouveau_niveau = self.mesurer_niveau()
+        nouveau_niveau = self.mesurer_niveau(channel=channel)
         msg = "Niveau avant mesure: {0}. Nouveau niveau {1}".format(self.NIVEAU, nouveau_niveau)
         self.logger.info(msg)
 
@@ -243,7 +244,7 @@ class NiveauCtrlCmd:
         self.NIVEAU = nouveau_niveau
             
 
-    def mesurer_niveau(self):
+    def mesurer_niveau(self, channel=None):
         etat_niv_min = GPIO.input(self.NIV_MIN_R)
         self.logger.debug("etat_niv_min={}".format(etat_niv_min))
         etat_niv_min_f = GPIO.input(self.NIV_MIN_F)
@@ -260,16 +261,33 @@ class NiveauCtrlCmd:
         self.logger.debug("etat_niv_max={}".format(etat_niv_max))
         etat_niv_max_f = GPIO.input(self.NIV_MAX_F)
         self.logger.debug("etat_niv_max_f={}".format(etat_niv_max_f))
+
+        niveau = None
         if etat_niv_max:
-            return self.MAX
+            niveau = self.MAX
         elif etat_niv_haut:
-            return self.HAUT
+            niveau = self.HAUT
         elif etat_niv_bas:
-            return self.NORMAL
+            niveau = self.NORMAL
         elif etat_niv_min:
-            return self.BAS
+            niveau = self.BAS
         else:
-            return self.MIN
+            niveau = self.MIN
+
+        if channel in [self.NIV_BAS_F, self.NIV_HAUT_F, self.NIV_MAX_F, self.NIV_MIN_F]:
+            self.direction = "descendant"
+        else:
+            self.direction = "montant"
+
+        self.last_event = channel
+        self.logger.debug("Direction: {direction}".format(direction=self.direction))
+        self.logger.debug("Etat pompe en action: {pompe}".format(pompe=self.pompe_en_action))
+        if self.direction == "montant" and not self.pompe_en_action:
+            self.logger.warning("Alerte, le niveau monte et la pompe n'est pas en action") 
+        if self.direction == "descendant" and self.pompe_en_action:
+            self.logger.warning("Alerte, le niveau descend et la pompe est en action")
+
+        return niveau
 
     def lire_temperature(self):
         while True:
