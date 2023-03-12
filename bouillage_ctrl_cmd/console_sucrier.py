@@ -11,6 +11,7 @@ from inspqcommun.kafka.consommateur import obtenirConfigurationsConsommateurDepu
 from confluent_kafka import OFFSET_END, Consumer
 import drivers
 import argparse
+from statistics import mean, pstdev
 
 class ConsoleSucrier:
     topic_niveau = "bouillage.niveau"
@@ -21,6 +22,10 @@ class ConsoleSucrier:
     ligne_niveau = 1
     ligne_temp = 2
     ligne_alerte = 1
+    dernieres_temperatures = []
+    nb_mesures_temp_pour_calcule_base = 3
+    ecart_pour_fin_bouillage = 3
+    temperature_base = None
 
     def __init__(self, log_level=logging.INFO):
         format = "%(asctime)s: %(message)s"
@@ -56,16 +61,40 @@ class ConsoleSucrier:
                 if msg.error():
                     self.logger.error("Erreur Kafka: {0} {1}".format(msg.error().code(), msg.error().str()))
                 if msg.topic() == self.topic_temp:
-                    self.afficher_temperature(key=decode_from_bytes(msg.key()), value=decode_from_bytes(msg.value()))
+                    self.traiter_temperature(key=decode_from_bytes(msg.key()), value=decode_from_bytes(msg.value()))
                 elif msg.topic() == self.topic_niveau:
                     self.afficher_niveau(key=decode_from_bytes(msg.key()), value=decode_from_bytes(msg.value()))
                 elif msg.topic() == self.topic_alerte:
                     self.lancer_alerte(key=decode_from_bytes(msg.key()), value=decode_from_bytes(msg.value()))
 
-    def afficher_temperature(self, key, value):
+    def traiter_temperature(self, key, value):
         self.logger.info("{0}: Temperature: {1}".format(key, value))
         self.display.lcd_display_string("Temp: {temp} C".format(temp=value).ljust(16),
                                         self.ligne_temp)
+        if self.temperature_base is None:
+            self.calculer_temperature_base(temp=value)
+        elif value > self.temperature_base + self.ecart_pour_fin_bouillage:
+            self.logger.warning("La temperature de bouillage est atteinte {temp}".format(temp=value))
+            self.display.lcd_display_string("Fin boil {temp}".format(temp=value).ljust(16),
+                                            self.ligne_alerte)
+        elif value < self.temperature_base - 0.5:
+            self.logger.warning("La temperature est sous la temperature de base {temp}".format(temp=value))
+            self.display.lcd_display_string("Tmp basse {temp}".format(temp=value).ljust(16),
+                                            self.ligne_alerte)
+
+    def calculer_temperature_base(self, temp):
+        if len(self.dernieres_temperatures) < self.nb_mesures_temp_pour_calcule_base:
+            self.dernieres_temperatures.add(temp)
+        else:
+            for mesure in range(self.nb_mesures_temp_pour_calcule_base - 1):
+                self.dernieres_temperatures[mesure] = self.dernieres_temperatures[mesure + 1]
+            self.dernieres_temperatures[self.nb_mesures_temp_pour_calcule_base - 1] = temp
+
+        if len(self.dernieres_temperatures) >= self.nb_mesures_temp_pour_calcule_base and temp > 95:
+            ecart_type = pstdev(self.dernieres_temperatures)
+            if ecart_type < 0.25:
+                self.temperature_base = mean(self.dernieres_temperatures)
+                self.logger.info("Temperature de base établi à {temp}".format(temp=self.temperature_base))
 
     def afficher_niveau(self, key, value):
         self.logger.info("{0}: Niveau: {1} {2}".format(key, value['niveau'], value['message']))
