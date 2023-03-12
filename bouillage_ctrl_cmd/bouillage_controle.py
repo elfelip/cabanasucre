@@ -91,7 +91,7 @@ class NiveauCtrlCmd:
                 "numero": self.NIV_MIN_R,
                 "nom": "NIV_MIN_R",
                 "mode": GPIO.IN,
-                "detect": GPIO.RISING,
+                "detect": GPIO.BOTH,
                 "callback": self.traiter_event_detect_pour_sonde_niveau,
                 "pull_up_down": GPIO.PUD_DOWN
             },
@@ -99,7 +99,7 @@ class NiveauCtrlCmd:
                 "numero": self.NIV_MIN_F,
                 "nom": "NIV_MIN_F",
                 "mode": GPIO.IN,
-                "detect": GPIO.FALLING,
+                "detect": GPIO.BOTH,
                 "callback": self.traiter_event_detect_pour_sonde_niveau,
                 "pull_up_down": GPIO.PUD_DOWN
             },
@@ -107,7 +107,7 @@ class NiveauCtrlCmd:
                 "numero": self.NIV_BAS_R,
                 "nom": "NIV_BAS_R",
                 "mode": GPIO.IN,
-                "detect": GPIO.RISING,
+                "detect": GPIO.BOTH,
                 "callback": self.traiter_event_detect_pour_sonde_niveau,
                 "pull_up_down": GPIO.PUD_DOWN
             },
@@ -115,7 +115,7 @@ class NiveauCtrlCmd:
                 "numero": self.NIV_BAS_F,
                 "nom": "NIV_BAS_F",
                 "mode": GPIO.IN,
-                "detect": GPIO.FALLING,
+                "detect": GPIO.BOTH,
                 "callback": self.traiter_event_detect_pour_sonde_niveau,
                 "pull_up_down": GPIO.PUD_DOWN
             },
@@ -123,7 +123,7 @@ class NiveauCtrlCmd:
                 "numero": self.NIV_HAUT_R,
                 "nom": "NIV_HAUT_R",
                 "mode": GPIO.IN,
-                "detect": GPIO.RISING,
+                "detect": GPIO.BOTH,
                 "callback": self.traiter_event_detect_pour_sonde_niveau,
                 "pull_up_down": GPIO.PUD_DOWN
             },
@@ -131,7 +131,7 @@ class NiveauCtrlCmd:
                 "numero": self.NIV_HAUT_F,
                 "nom": "NIV_HAUT_F",
                 "mode": GPIO.IN,
-                "detect": GPIO.FALLING,
+                "detect": GPIO.BOTH,
                 "callback": self.traiter_event_detect_pour_sonde_niveau,
                 "pull_up_down": GPIO.PUD_DOWN
             },
@@ -139,7 +139,7 @@ class NiveauCtrlCmd:
                 "numero": self.NIV_MAX_R,
                 "nom": "NIV_MAX_R",
                 "mode": GPIO.IN,
-                "detect": GPIO.RISING,
+                "detect": GPIO.BOTH,
                 "callback": self.traiter_event_detect_pour_sonde_niveau,
                 "pull_up_down": GPIO.PUD_DOWN
             },
@@ -147,7 +147,7 @@ class NiveauCtrlCmd:
                 "numero": self.NIV_MAX_F,
                 "nom": "NIV_MAX_F",
                 "mode": GPIO.IN,
-                "detect": GPIO.FALLING,
+                "detect": GPIO.BOTH,
                 "callback": self.traiter_event_detect_pour_sonde_niveau,
                 "pull_up_down": GPIO.PUD_DOWN
             },
