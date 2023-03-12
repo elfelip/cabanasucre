@@ -209,10 +209,7 @@ class NiveauCtrlCmd:
             maintenant = self.maintenant()
             message = {}
             message["key"] = maintenant
-            message["value"] = {}
-            message["value"]["timestamp"] = maintenant
-            message["value"]["niveau"] = niveau
-            message["value"]["message"] = self.info_niveaux[niveau]["message"]
+            message["value"] = self.info_niveaux[niveau]
             publierMessage(producteur=self.producteur,message=message,topic=self.topic_niveau,logger=self.logger)
             if self.info_niveaux[niveau]["alerte"]:
                 publierMessage(producteur=self.producteur,message=message,topic=self.topic_alerte,logger=self.logger)
@@ -231,6 +228,7 @@ class NiveauCtrlCmd:
             
 
     def traiter_event_detect_pour_sonde_niveau(self, channel=None):
+        self.logger.debug("traiter_event_detect_pour_sonde_niveau channel: {channel}".format(channel=channel))
         nouveau_niveau = self.mesurer_niveau()
         msg = "Niveau avant mesure: {0}. Nouveau niveau {1}".format(self.NIVEAU, nouveau_niveau)
         self.logger.info(msg)
