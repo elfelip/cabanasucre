@@ -21,6 +21,7 @@ class NiveauCtrlCmd:
     NIV_MAX_R = 22 # 15
     NIV_MAX_F = 25 # 22
     POMPE = 26 # 37
+    TONNE = 16 # 36
     ERREUR = -1
     VIDE = 0
     MIN = 1
@@ -74,6 +75,7 @@ class NiveauCtrlCmd:
     producteur = None
     logger = None
     last_event = None
+    pompe_enabled = False
     
     def __init__(self, log_level=logging.INFO):
         format = "%(asctime)s: %(message)s"
@@ -152,6 +154,14 @@ class NiveauCtrlCmd:
                 "pull_up_down": GPIO.PUD_DOWN
             },
             {
+                "numero": self.TONNE,
+                "nom": "TONNE",
+                "mode": GPIO.IN,
+                "detect": GPIO.BOTH,
+                "callback": self.traiter_event_detect_pour_sonde_tonne,
+                "pull_up_down": GPIO.PUD_DOWN
+            },
+            {
                 "numero": self.POMPE,
                 "nom": "POMPE",
                 "mode": GPIO.OUT,
@@ -173,6 +183,7 @@ class NiveauCtrlCmd:
                 GPIO.setup(connecteur["numero"], connecteur["mode"], initial=initial)
 
         self.arreter_pompe()
+        self.verifier_niveau_tonne()
         self.NIVEAU = self.mesurer_niveau()
         if self.NIVEAU < self.NORMAL:
             self.demarrer_pompe()
@@ -216,14 +227,17 @@ class NiveauCtrlCmd:
                 publierMessage(producteur=self.producteur,message=message,topic=self.topic_alerte,logger=self.logger)
 
     def demarrer_pompe(self):
-        self.logger.info("Démarrer la pompe pour ajouter de l'eau.")
-        if not self.pompe_en_action:
-            GPIO.output(self.POMPE, GPIO.LOW)
-            self.pompe_en_action = True
+        if self.pompe_enabled:
+            if not self.pompe_en_action:
+                self.logger.info("Démarrer la pompe pour ajouter de l'eau.")
+                GPIO.output(self.POMPE, GPIO.LOW)
+                self.pompe_en_action = True
+        else:
+            self.logger.warning("Impossible de démarrer la pompe, il n'y a pas assez d'eau dans la tonne")
         
     def arreter_pompe(self):
-        self.logger.info("Arrêter la pompe.")
         if self.pompe_en_action:
+            self.logger.info("Arrêter la pompe.")
             GPIO.output(self.POMPE, GPIO.HIGH)
             self.pompe_en_action = False
             
@@ -295,6 +309,39 @@ class NiveauCtrlCmd:
             self.logger.warning("Alerte, le niveau descend et la pompe est en action")
 
         return niveau
+
+    def traiter_event_detect_pour_sonde_tonne(self, channel=None):
+        self.logger.debug("traiter_event_detect_pour_sonde_tonne channel: {channel}".format(channel=channel))
+        if channel is not None and channel == self.TONNE:
+            self.verifier_niveau_tonne()
+
+    def verifier_niveau_tonne(self):
+        sonde_niveau_tonne = GPIO.input(self.TONNE)
+        self.logger.debug("Sonde niveau tonne: {}".format(sonde_niveau_tonne))
+        if sonde_niveau_tonne:
+            self.logger.info("Il y a de l'eau dans la tonne")
+            self.pompe_enabled = True
+            self.mesurer_niveau()
+        else:
+            self.logger.warning("Il n'y a plus d'eau dans la tonne.")
+            if self.pompe_en_action:
+                self.arreter_pompe()
+            self.pompe_enabled = False
+            self.publier_alerte_tonne_vide()
+
+    def publier_alerte_tonne_vide(self):
+        niveau_tonne_message = {
+                "niveau": 0,
+                "alerte": True,
+                "display": "TONNE_VIDE",
+                "message": "La tonne est vide, la pompe est désactivée."
+            }
+        if self.producteur is not None:
+            maintenant = self.maintenant()
+            message = {}
+            message["key"] = maintenant
+            message["value"] = self.info_niveaux[niveau_tonne_message]
+            publierMessage(producteur=self.producteur,message=message,topic=self.topic_alerte,logger=self.logger)
 
     def lire_temperature(self):
         while True:
