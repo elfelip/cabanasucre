@@ -322,6 +322,8 @@ class NiveauCtrlCmd:
             self.logger.info("Il y a de l'eau dans la tonne")
             self.pompe_enabled = True
             self.mesurer_niveau()
+            if self.NIVEAU < self.NORMAL:
+                self.demarrer_pompe()
         else:
             self.logger.warning("Il n'y a plus d'eau dans la tonne.")
             if self.pompe_en_action:
