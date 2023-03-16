@@ -342,7 +342,7 @@ class NiveauCtrlCmd:
             maintenant = self.maintenant()
             message = {}
             message["key"] = maintenant
-            message["value"] = self.info_niveaux[niveau_tonne_message]
+            message["value"] = niveau_tonne_message
             publierMessage(producteur=self.producteur,message=message,topic=self.topic_alerte,logger=self.logger)
 
     def lire_temperature(self):
