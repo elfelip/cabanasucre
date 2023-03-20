@@ -104,7 +104,7 @@ class ConsoleSucrier:
 
     def afficher_niveau(self, key, value):
         self.logger.info("{0}: Niveau: {1} {2}".format(key, value['niveau'], value['message']))
-        self.messages[self.ligne_niveau] = "{niveau}".format(type=type,niveau=value['display'])
+        self.messages[self.ligne_niveau] = "Niveau: {niveau}".format(type=type,niveau=value['display'])
 
     def lancer_alerte(self, key, value):
         self.logger.warning("{0}: Alerte niveau: {1} {2}".format(key, value['niveau'], value['message']))
