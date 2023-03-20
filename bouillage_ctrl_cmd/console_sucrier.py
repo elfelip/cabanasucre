@@ -27,7 +27,7 @@ class ConsoleSucrier:
     nb_mesures_temp_pour_calcule_base = 3
     ecart_pour_fin_bouillage = 3
     temperature_base = None
-    messages = ["Console Sucrier", "Attente msg...","Aucune alerte")
+    messages = ["Console Sucrier", "Attente msg...","Aucune alerte"]
 
     premiere_ligne = 0
     temps_rafraichissement_affichage = 10
