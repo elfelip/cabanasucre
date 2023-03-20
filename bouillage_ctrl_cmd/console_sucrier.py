@@ -112,7 +112,7 @@ class ConsoleSucrier:
         
     def rafraichir_affichage(self):
         while True:
-            if self.premiere_ligne >= len(self.messages - 2):
+            if self.premiere_ligne >= len(self.messages) - 2:
                 self.premiere_ligne = 0
             
             self.display.lcd_display_string(self.messages[self.premiere_ligne].ljust(16), 1)
