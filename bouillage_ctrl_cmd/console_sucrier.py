@@ -112,7 +112,7 @@ class ConsoleSucrier:
         
     def rafraichir_affichage(self):
         while True:
-            if self.premiere_ligne >= len(self.messages) - 2:
+            if self.premiere_ligne >= len(self.messages) - 1:
                 self.premiere_ligne = 0
             self.logger.debug(self.messages[self.premiere_ligne])
             self.logger.debug(self.messages[self.premiere_ligne + 1])
