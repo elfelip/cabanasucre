@@ -114,7 +114,8 @@ class ConsoleSucrier:
         while True:
             if self.premiere_ligne >= len(self.messages) - 2:
                 self.premiere_ligne = 0
-            
+            self.logger.debug(self.messages[self.premiere_ligne])
+            self.logger.debug(self.messages[self.premiere_ligne + 1])
             self.display.lcd_display_string(self.messages[self.premiere_ligne].ljust(16), 1)
             self.display.lcd_display_string(self.messages[self.premiere_ligne + 1].ljust(16), 2)
             self.premiere_ligne += 1
