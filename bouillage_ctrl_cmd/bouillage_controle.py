@@ -10,6 +10,7 @@ import threading
 import os
 from inspqcommun.kafka.producteur import obtenirConfigurationsProducteurDepuisVariablesEnvironnement, creerProducteur, publierMessage
 import argparse
+from statistics import mean, pstdev
 
 class NiveauCtrlCmd:
     NIV_MIN_R = 5 # 29
@@ -94,7 +95,28 @@ class NiveauCtrlCmd:
         "display": "POMPE_OFF",
         "message": "Arrêt de la pompe"
     }
-
+    message_alerte_fin_bouillage = {
+        "niveau": 0,
+        "alerte": True,
+        "display": "FIN_BOUIL",
+        "message": "Fin du bouillage"
+    }
+    message_alerte_temperature_basse = {
+        "niveau": 0,
+        "alerte": True,
+        "display": "BAS_TEMP",
+        "message": "Température basse"
+    }
+    message_alerte_temperature_de_base_etablie = {
+        "niveau": 0,
+        "alerte": True,
+        "display": "TEMP_BASE",
+        "message": "La température de base de bouillage a été établie"
+    }
+    dernieres_temperatures = []
+    nb_mesures_temp_pour_calcule_base = 3
+    ecart_pour_fin_bouillage = 3
+    temperature_base = None
     
     def __init__(self, log_level=logging.INFO):
         format = "%(asctime)s: %(message)s"
@@ -360,6 +382,42 @@ class NiveauCtrlCmd:
             message["value"] = contenu_message
             publierMessage(producteur=self.producteur,message=message,topic=self.topic_alerte,logger=self.logger)
 
+    def traiter_temperature(self, value):        
+        if self.temperature_base is None:
+            self.calculer_temperature_base(temp=value)
+        elif value > self.temperature_base + self.ecart_pour_fin_bouillage:
+            self.logger.warning("La temperature de fin de bouillage est atteinte {temp}".format(temp=value))
+            alerte = self.message_alerte_fin_bouillage.copy()
+            alerte['display'] = "{msg}: {temp} C".format(msg=alerte["display"], temp=value)
+            self.publier_alerte(contenu_message=alerte)
+        elif value < self.temperature_base - 0.5:
+            self.logger.warning("La temperature est sous la temperature de base {temp}".format(temp=value))
+            alerte = self.message_alerte_temperature_basse.copy()
+            alerte['display'] = "{msg}: {temp} C".format(msg=alerte["display"], temp=value)
+            self.publier_alerte(contenu_message=alerte)
+
+    def calculer_temperature_base(self, temp):
+        if len(self.dernieres_temperatures) < self.nb_mesures_temp_pour_calcule_base:
+            self.logger.debug("Ajout {temp} dans dernieres temperatures".format(temp=temp))
+            self.dernieres_temperatures.append(temp)
+        else:
+            self.logger.debug("Remplacer {temp1} par {temp2} dans dernieres temperatures".format(
+                temp1=self.dernieres_temperatures[0],
+                temp2=temp))
+            for mesure in range(self.nb_mesures_temp_pour_calcule_base - 1):
+                self.dernieres_temperatures[mesure] = self.dernieres_temperatures[mesure + 1]
+            self.dernieres_temperatures[self.nb_mesures_temp_pour_calcule_base - 1] = temp
+
+        if len(self.dernieres_temperatures) >= self.nb_mesures_temp_pour_calcule_base and temp > 95:
+            ecart_type = pstdev(self.dernieres_temperatures)
+            self.logger.debug("Ecart type temp: {ecart}".format(ecart=ecart_type))
+            if ecart_type < 0.25:
+                self.temperature_base = mean(self.dernieres_temperatures)
+                self.logger.info("Temperature de base établi à {temp}".format(temp=self.temperature_base))
+                alerte = self.message_alerte_temperature_de_base_etablie.copy()
+                alerte['display'] = "{msg}: {temp} C".format(msg=alerte["display"], temp=self.temperature_base)
+                self.publier_alerte(contenu_message=alerte)
+
     def lire_temperature(self):
         while True:
             lines = []
@@ -386,6 +444,7 @@ class NiveauCtrlCmd:
             if len(lines) > 0:
                 temperature = int(lines[0])/1000
                 self.logger.info("La temperature est: {0}".format(temperature))
+                self.traiter_temperature(value=temperature)
                 if self.producteur is not None:
                     message = {}
                     maintenant = self.maintenant()
