@@ -78,7 +78,7 @@ class ConsoleSucrier:
 
     def lancer_alerte(self, key, value):
         self.logger.warning("{0}: Alerte niveau: {1} {2}".format(key, value['niveau'], value['message']))
-        self.messages[self.ligne_alerte] = "Alerte: {display}".format(display=value["display"])
+        self.messages[self.ligne_alerte] = "{display}".format(display=value["display"])
         
     def rafraichir_affichage(self):
         while True:
