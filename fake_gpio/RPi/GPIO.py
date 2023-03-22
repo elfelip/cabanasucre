@@ -15,7 +15,10 @@ RPI_REVISION = 1
 def setmode(mode):
     pass
 
-def setup(connecteur, mode, pull_up_down, initial):
+def setup(connecteur, mode, pull_up_down=None):
+    pass
+
+def setup(connecteur, mode, initial=None):
     pass
 
 def add_event_detect(connecteur, mode, callback, bouncetime):

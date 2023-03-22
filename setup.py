@@ -10,15 +10,15 @@ setup(
     author='Philippe Gauthier',
     author_email='elfelip@yahoo.com',
     # Needed to actually package something
-    packages=['console_sucrier','bouillage_controle'],
+    packages=['bouillage_ctrl_cmd'],
     # Needed for dependencies
-    install_requires=['inspqcommun==1.3.3'],
+    install_requires=[],
     # *strongly* suggested for sharing
-    version='0.0.1',
+    version='0.0.3',
     #version_command=('git describe', "pep440-git-local"),
     # The license can be anything you like
     license='',
-    description='Controle de la production sirop erable',
+    description='Automatisation Cabane a sucre',
     long_description=io.open('README.md', 'r', encoding="utf-8").read(),
 )
 

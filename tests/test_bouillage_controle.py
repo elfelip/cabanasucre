@@ -55,7 +55,7 @@ class TestNiveauCtrlCmd(TestCase):
 
     # Tests Sonde NIN_MIN
     @mock.patch('RPi.GPIO.setmode', side_effect=gpio_setmode_mock)
-    @mock.patch('RPi.GPIO.setup', side_effect=gpio_setup_mock)
+    @mock.patch('GPIO.setup', side_effect=gpio_setup_mock)
     @mock.patch('RPi.GPIO.add_event_detect', side_effect=gpio_add_event_detect_mock)
     @mock.patch('RPi.GPIO.input', side_effect=gpio_input_bas_mock)
     @mock.patch('bouillage_ctrl_cmd.bouillage_controle.NiveauCtrlCmd.ouvrir_valve', side_effect=ouvrir_valve_mock)
