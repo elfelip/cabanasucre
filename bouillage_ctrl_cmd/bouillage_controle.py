@@ -265,7 +265,9 @@ class NiveauCtrlCmd:
             message["value"] = self.info_niveaux[niveau]
             publierMessage(producteur=self.producteur,message=message,topic=self.topic_niveau,logger=self.logger)
             if self.info_niveaux[niveau]["alerte"]:
-                self.publier_alerte(contenu_message=self.info_niveaux[niveau])
+                alerte = self.info_niveaux[niveau].copy()
+                alerte['display'] = "NIV_{niveau}".format(niveau=self.info_niveaux[niveau]["display"])
+                self.publier_alerte(contenu_message=alerte)
                 
     def demarrer_pompe(self):
         if self.pompe_enabled:
