@@ -114,8 +114,8 @@ class NiveauCtrlCmd:
         "message": "La température de base de bouillage a été établie"
     }
     dernieres_temperatures = []
-    nb_mesures_temp_pour_calcule_base = 3
-    ecart_pour_fin_bouillage = 3
+    nb_mesures_temp_pour_calcule_base = 5
+    ecart_pour_fin_bouillage = 4
     temperature_base = None
     
     def __init__(self, log_level=logging.INFO):
