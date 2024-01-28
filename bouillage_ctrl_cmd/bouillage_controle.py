@@ -4,7 +4,10 @@ import glob
 import signal
 import sys
 from time import localtime, strftime, sleep
-import RPi.GPIO as GPIO
+try:
+    import RPi.GPIO as GPIO
+except ImportError:
+    import fake_gpio.RPi.GPIO
 import logging
 import threading
 import os
@@ -13,23 +16,21 @@ import argparse
 from statistics import mean, pstdev
 
 class NiveauCtrlCmd:
-    NIV_MIN_R = 5 # 29
-    NIV_MIN_F = 12 # 32
-    NIV_BAS_R = 17 # 11
-    NIV_BAS_F = 23 # 16
-    NIV_HAUT_R = 27 # 13
-    NIV_HAUT_F = 24 # 18
-    NIV_MAX_R = 22 # 15
-    NIV_MAX_F = 25 # 22
-    POMPE = 26 # 37
-    TONNE = 16 # 36
+    BROCHE_NIV_1 = 12 # 32
+    BROCHE_NIV_2 = 5 # 29
+    BROCHE_NIV_3 = 25 # 22
+    BROCHE_NIV_4 = 22 # 15
+    BROCHE_NIV_5 = 24 # 18
+    BROCHE_NIV_6 = 27 # 13
+    BROCHE_NIV_7 = 23 # 16
+    BROCHE_NIV_8 = 17 # 11
+    BROCHE_POMPE = 26 # 37
+    BROCHE_TONNE = 16 # 36
     ERREUR = -1
     VIDE = 0
-    MIN = 1
     BAS = 2
-    NORMAL = 3
     HAUT = 4
-    MAX = 5
+    MAX = 8
     NIVEAU = 0
     info_niveaux = [
         {
@@ -39,34 +40,60 @@ class NiveauCtrlCmd:
             "message": "Le chaudron est vide"
         },
         {
-            "niveau": MIN,
+            "niveau": 1,
             "alerte": True,
-            "display": "MIN",
-            "message": "Le niveau du chaudron est au minimum"
+            "display": "1-2",
+            "message": "Niveau entre 1 et 2 pouces",
+            "broche": BROCHE_NIV_1
         },
         {
-            "niveau": BAS,
+            "niveau": 2,
             "alerte": False,
-            "display": "BAS",
-            "message": "Le niveau du chaudron est bas"
+            "display": "2-3",
+            "message": "Niveau entre 2 et 3 pouces",
+            "broche": BROCHE_NIV_2
         },
         {
-            "niveau": NORMAL,
+            "niveau": 3,
             "alerte": False,
-            "display": "NORMAL",
-            "message": "Le niveau du chaudron est normal pour le bouillage"
+            "display": "3-4",
+            "message": "Niveau entre 3 et 4 pouces",
+            "broche": BROCHE_NIV_3
         },
         {
-            "niveau": HAUT,
+            "niveau": 4,
             "alerte": False,
-            "display": "HAUT",
-            "message": "Le niveau du chaudron est haut"
+            "display": "4-5",
+            "message": "Niveau entre 4 et 5 pouces",
+            "broche": BROCHE_NIV_4
         },
         {
-            "niveau": MAX,
+            "niveau": 5,
             "alerte": True,
-            "display": "MAX",
-            "message": "Le niveau du chaudron est au maximum, vérifier la pompe."
+            "display": "5-6",
+            "message": "Niveau entre 5 et 6 pouces",
+            "broche": BROCHE_NIV_5
+        },
+        {
+            "niveau": 6,
+            "alerte": True,
+            "display": "6-7",
+            "message": "Niveau entre 6 et 7 pouces",
+            "broche": BROCHE_NIV_6
+        },
+        {
+            "niveau": 7,
+            "alerte": True,
+            "display": "7-8",
+            "message": "Niveau entre 7 et 8 pouces",
+            "broche": BROCHE_NIV_7
+        },
+        {
+            "niveau": 8,
+            "alerte": True,
+            "display": "8+",
+            "message": "Niveau pls de 8 pouces",
+            "broche": BROCHE_NIV_8
         }
     ]
     MODE = GPIO.BCM # GPIO.BOARD
@@ -131,70 +158,6 @@ class NiveauCtrlCmd:
         self.pompe_en_action = False
         self.connecteurs = [
             {
-                "numero": self.NIV_MIN_R,
-                "nom": "NIV_MIN_R",
-                "mode": GPIO.IN,
-                "detect": GPIO.BOTH,
-                "callback": self.traiter_event_detect_pour_sonde_niveau,
-                "pull_up_down": GPIO.PUD_DOWN
-            },
-            {
-                "numero": self.NIV_MIN_F,
-                "nom": "NIV_MIN_F",
-                "mode": GPIO.IN,
-                "detect": GPIO.BOTH,
-                "callback": self.traiter_event_detect_pour_sonde_niveau,
-                "pull_up_down": GPIO.PUD_DOWN
-            },
-            {
-                "numero": self.NIV_BAS_R,
-                "nom": "NIV_BAS_R",
-                "mode": GPIO.IN,
-                "detect": GPIO.BOTH,
-                "callback": self.traiter_event_detect_pour_sonde_niveau,
-                "pull_up_down": GPIO.PUD_DOWN
-            },
-            {
-                "numero": self.NIV_BAS_F,
-                "nom": "NIV_BAS_F",
-                "mode": GPIO.IN,
-                "detect": GPIO.BOTH,
-                "callback": self.traiter_event_detect_pour_sonde_niveau,
-                "pull_up_down": GPIO.PUD_DOWN
-            },
-            {
-                "numero": self.NIV_HAUT_R,
-                "nom": "NIV_HAUT_R",
-                "mode": GPIO.IN,
-                "detect": GPIO.BOTH,
-                "callback": self.traiter_event_detect_pour_sonde_niveau,
-                "pull_up_down": GPIO.PUD_DOWN
-            },
-            {
-                "numero": self.NIV_HAUT_F,
-                "nom": "NIV_HAUT_F",
-                "mode": GPIO.IN,
-                "detect": GPIO.BOTH,
-                "callback": self.traiter_event_detect_pour_sonde_niveau,
-                "pull_up_down": GPIO.PUD_DOWN
-            },
-            {
-                "numero": self.NIV_MAX_R,
-                "nom": "NIV_MAX_R",
-                "mode": GPIO.IN,
-                "detect": GPIO.BOTH,
-                "callback": self.traiter_event_detect_pour_sonde_niveau,
-                "pull_up_down": GPIO.PUD_DOWN
-            },
-            {
-                "numero": self.NIV_MAX_F,
-                "nom": "NIV_MAX_F",
-                "mode": GPIO.IN,
-                "detect": GPIO.BOTH,
-                "callback": self.traiter_event_detect_pour_sonde_niveau,
-                "pull_up_down": GPIO.PUD_DOWN
-            },
-            {
                 "numero": self.TONNE,
                 "nom": "TONNE",
                 "mode": GPIO.IN,
@@ -211,7 +174,17 @@ class NiveauCtrlCmd:
         ]
         self.logger.info("setmode: {0}".format(self.MODE))
         GPIO.setmode(self.MODE)
-
+        # Initier tous les connecteurs de niveaux
+        mode = GPIO.IN
+        detect = GPIO.BOTH
+        pull_up_down = GPIO.PUD_DOWN
+        callback = self.traiter_event_detect_pour_sonde_niveau
+        for connecteur in self.info_niveaux:
+            self.logger.info ("setup connecteur {0} mode: {1}".format(
+                connecteur["broche"], 
+                mode))
+            GPIO.setup(connecteur["broche"], mode, pull_up_down=pull_up_down)
+        # Initier les autres connecteurs
         for connecteur in self.connecteurs:
             self.logger.info ("setup connecteur {0} mode: {1}".format(
                 connecteur["numero"], 
