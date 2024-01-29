@@ -277,43 +277,29 @@ class NiveauCtrlCmd:
             
 
     def mesurer_niveau(self, channel=None):
-        etat_niv_min = GPIO.input(self.NIV_MIN_R)
-        self.logger.debug("etat_niv_min={}".format(etat_niv_min))
-        etat_niv_min_f = GPIO.input(self.NIV_MIN_F)
-        self.logger.debug("etat_niv_min_f={}".format(etat_niv_min_f))
-        etat_niv_bas = GPIO.input(self.NIV_BAS_R)
-        self.logger.debug("etat_niv_bas={}".format(etat_niv_bas))
-        etat_niv_bas_f = GPIO.input(self.NIV_BAS_F)
-        self.logger.debug("etat_niv_bas_f={}".format(etat_niv_bas_f))
-        etat_niv_haut = GPIO.input(self.NIV_HAUT_R)
-        self.logger.debug("etat_niv_haut={}".format(etat_niv_haut))
-        etat_niv_haut_f = GPIO.input(self.NIV_HAUT_F)
-        self.logger.debug("etat_niv_haut_f={}".format(etat_niv_haut_f))
-        etat_niv_max = GPIO.input(self.NIV_MAX_R)
-        self.logger.debug("etat_niv_max={}".format(etat_niv_max))
-        etat_niv_max_f = GPIO.input(self.NIV_MAX_F)
-        self.logger.debug("etat_niv_max_f={}".format(etat_niv_max_f))
+        etat_connecteurs = []
+        for connecteur in self.info_niveaux:
+            etat_niveau = {}
+            etat_niveau["niveau"] = connecteur["niveau"]
+            etat_niveau["etat"] = GPIO.input(connecteur["broche"])
+            etat_connecteurs.append(etat_niveau)
+            self.logger.debug("etat niv {niveau}: {etat}".format(connecteur["display"], etat_niveau))    
 
         niveau = None
-        if etat_niv_max or etat_niv_max_f:
-            niveau = self.MAX
-        elif etat_niv_haut or etat_niv_haut_f:
-            niveau = self.HAUT
-        elif etat_niv_bas or etat_niv_bas_f:
-            niveau = self.NORMAL
-        elif etat_niv_min or etat_niv_min_f:
-            niveau = self.BAS
-        else:
-            niveau = self.MIN
-
-        if ((channel == self.NIV_MIN_F and etat_niv_min_f) or
-            (channel == self.NIV_MIN_R and etat_niv_min) or
-            (channel == self.NIV_BAS_F and etat_niv_bas_f) or    
-            (channel == self.NIV_BAS_R and etat_niv_bas) or
-            (channel == self.NIV_HAUT_F and etat_niv_haut_f) or    
-            (channel == self.NIV_HAUT_R and etat_niv_haut) or
-            (channel == self.NIV_MAX_F and etat_niv_max_f) or    
-            (channel == self.NIV_MAX_R and etat_niv_max)):
+        i = self.MAX
+        while niveau is None:
+            i = i - 1
+            if etat_connecteurs[i]["etat"]:
+                niveau = etat_connecteurs[i]["niveau"]
+                break
+        niveau_sonde_channel = None
+        # Trouver le niveau associé à la broche qui a provoqué l'appel
+        for info_niveau in self.info_niveaux:
+            if (channel == info_niveau["broche"]):
+                niveau_sonde_channel = info_niveau["niveau"]
+                break;
+            
+        if niveau_sonde_channel == niveau:
             self.direction = "montant"
         else:
             self.direction = "descendant"
