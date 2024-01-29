@@ -291,6 +291,7 @@ class NiveauCtrlCmd:
             etat_connecteurs.append(etat_niveau)
             self.logger.debug("etat niv {niveau}: {etat}".format(connecteur["display"], etat_niveau))    
 
+        # Trouver la sonde la plus haute dont l'état est 1
         niveau = None
         i = self.MAX
         while niveau is None:
@@ -304,10 +305,10 @@ class NiveauCtrlCmd:
             if (channel == info_niveau["broche"]):
                 niveau_sonde_channel = info_niveau["niveau"]
                 break;
-            
+        # Si la sonde qui a provoqué l'appel est la plus haute qui à l'état 1, le niveau monte.    
         if niveau_sonde_channel == niveau:
             self.direction = "montant"
-        else:
+        else: # Sinon, le niveau descend.
             self.direction = "descendant"
 
         self.last_event = channel
