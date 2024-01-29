@@ -145,7 +145,7 @@ class NiveauCtrlCmd:
     ecart_pour_fin_bouillage = 4
     temperature_base = None
     
-    def __init__(self, log_level=logging.INFO):
+    def __init__(self, log_level=logging.INFO, niveau_bas=2, niveau_haut=4, niveau_max=8):
         format = "%(asctime)s: %(message)s"
         logging.basicConfig(
             format=format,
@@ -154,6 +154,12 @@ class NiveauCtrlCmd:
             datefmt="%H:%M:%S")
         self.logger=logging.getLogger('bouillage_controle')
         self.logger.setLevel(log_level)
+        self.BAS = niveau_bas
+        self.logger.info("Le niveau bas est {}".format(self.BAS))
+        self.HAUT = niveau_haut
+        self.logger.info("Le niveau haut est {}".format(self.HAUT))
+        self.MAX = niveau_max
+        self.logger.info("Le niveau maximum est {}".format(self.MAX))
 
         self.pompe_en_action = False
         self.connecteurs = [
@@ -183,7 +189,7 @@ class NiveauCtrlCmd:
             self.logger.info ("setup connecteur {0} mode: {1}".format(
                 connecteur["broche"], 
                 mode))
-            GPIO.setup(connecteur["broche"], mode, pull_up_down=pull_up_down)
+            GPIO.setup(connecteur["broche"], mode, pull_up_down=pull_up_down, detect=detect, callback=callback)
         # Initier les autres connecteurs
         for connecteur in self.connecteurs:
             self.logger.info ("setup connecteur {0} mode: {1}".format(
@@ -239,7 +245,7 @@ class NiveauCtrlCmd:
             publierMessage(producteur=self.producteur,message=message,topic=self.topic_niveau,logger=self.logger)
             if self.info_niveaux[niveau]["alerte"]:
                 alerte = self.info_niveaux[niveau].copy()
-                alerte['display'] = "NIV_{niveau}".format(niveau=self.info_niveaux[niveau]["display"])
+                alerte['display'] = "NIV: {niveau}".format(niveau=self.info_niveaux[niveau]["display"])
                 self.publier_alerte(contenu_message=alerte)
                 
     def demarrer_pompe(self):
@@ -421,14 +427,31 @@ class NiveauCtrlCmd:
         return str_maintenant
 
 parser = argparse.ArgumentParser()
-parser.add_argument( '-log',
+parser.add_argument('-log',
                     '--loglevel',
                     default='info',
                     help='Provide logging level. Example --loglevel debug, default=info' )
-
+parser.add_argument('-l',
+                    '--niveaubas',
+                    default=2,
+                    type=int,
+                    help='Niveau minimum pour le démarrage de la pompe. Example --niveaubas=3, défaut=2')
+parser.add_argument('-u',
+                    '--niveauhaut',
+                    default=4,
+                    type=int,
+                    help="Niveau a atteindre pour l'arrêt de la pompe. Example --niveauhaut=6, défaut=4")
+parser.add_argument('-m',
+                    '--niveaumax',
+                    default=8,
+                    type=int,
+                    help="Niveau maximum possible. Example --niveaumax=8, défaut=8")
 args = parser.parse_args()
 
-ctrl_cmd = NiveauCtrlCmd(log_level=args.loglevel.upper())
+ctrl_cmd = NiveauCtrlCmd(log_level=args.loglevel.upper(),
+                         niveau_bas=args.niveaubas(),
+                         niveau_haut=args.niveauhaut(),
+                         niveau_max=args.niveaumax())
 
 def signal_handler(sig, frame):
     ctrl_cmd.arreter_pompe()
