@@ -299,6 +299,8 @@ class NiveauCtrlCmd:
         # Trouver la sonde la plus haute dont l'état est 1
         niveau = None
         i = len(etat_connecteurs) - 1
+        print(str(etat_connecteurs))
+        print(str(i))
         while niveau is None:
             i = i - 1
             if etat_connecteurs[i]["etat"]:
