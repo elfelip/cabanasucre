@@ -256,7 +256,7 @@ class NiveauCtrlCmd:
         if self.pompe_enabled:
             if not self.pompe_en_action:
                 self.logger.info("Démarrer la pompe pour ajouter de l'eau.")
-                GPIO.output(self.BROCHE_POMPE, GPIO.LOW)
+                GPIO.output(self.BROCHE_POMPE, GPIO.HIGH)
                 self.pompe_en_action = True
                 self.publier_alerte(contenu_message=self.message_alerte_demarrage_pompe)
         else:
@@ -265,7 +265,7 @@ class NiveauCtrlCmd:
     def arreter_pompe(self):
         if self.pompe_en_action:
             self.logger.info("Arrêter la pompe.")
-            GPIO.output(self.BROCHE_POMPE, GPIO.HIGH)
+            GPIO.output(self.BROCHE_POMPE, GPIO.LOW)
             self.pompe_en_action = False
             self.publier_alerte(contenu_message=self.message_alerte_arret_pompe)
             
