@@ -164,7 +164,7 @@ class NiveauCtrlCmd:
         self.pompe_en_action = False
         self.connecteurs = [
             {
-                "numero": self.TONNE,
+                "numero": self.BROCHE_TONNE,
                 "nom": "TONNE",
                 "mode": GPIO.IN,
                 "detect": GPIO.BOTH,
@@ -172,7 +172,7 @@ class NiveauCtrlCmd:
                 "pull_up_down": GPIO.PUD_DOWN
             },
             {
-                "numero": self.POMPE,
+                "numero": self.BROCHE_POMPE,
                 "nom": "POMPE",
                 "mode": GPIO.OUT,
                 "initial": GPIO.HIGH
@@ -252,7 +252,7 @@ class NiveauCtrlCmd:
         if self.pompe_enabled:
             if not self.pompe_en_action:
                 self.logger.info("Démarrer la pompe pour ajouter de l'eau.")
-                GPIO.output(self.POMPE, GPIO.LOW)
+                GPIO.output(self.BROCHE_POMPE, GPIO.LOW)
                 self.pompe_en_action = True
                 self.publier_alerte(contenu_message=self.message_alerte_demarrage_pompe)
         else:
@@ -261,7 +261,7 @@ class NiveauCtrlCmd:
     def arreter_pompe(self):
         if self.pompe_en_action:
             self.logger.info("Arrêter la pompe.")
-            GPIO.output(self.POMPE, GPIO.HIGH)
+            GPIO.output(self.BROCHE_POMPE, GPIO.HIGH)
             self.pompe_en_action = False
             self.publier_alerte(contenu_message=self.message_alerte_arret_pompe)
             
@@ -323,11 +323,11 @@ class NiveauCtrlCmd:
 
     def traiter_event_detect_pour_sonde_tonne(self, channel=None):
         self.logger.debug("traiter_event_detect_pour_sonde_tonne channel: {channel}".format(channel=channel))
-        if channel is not None and channel == self.TONNE:
+        if channel is not None and channel == self.BROCHE_TONNE:
             self.verifier_niveau_tonne()
 
     def verifier_niveau_tonne(self):
-        sonde_niveau_tonne = GPIO.input(self.TONNE)
+        sonde_niveau_tonne = GPIO.input(self.BROCHE_TONNE)
         self.logger.debug("Sonde niveau tonne: {}".format(sonde_niveau_tonne))
         if sonde_niveau_tonne:
             self.logger.info("Il y a de l'eau dans la tonne")
