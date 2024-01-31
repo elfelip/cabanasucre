@@ -297,11 +297,11 @@ class NiveauCtrlCmd:
                 self.logger.debug("etat niv {niveau}: {etat}".format(niveau=connecteur["display"], etat=etat_niveau["etat"]))    
 
         # Trouver la sonde la plus haute dont l'état est 1
-        niveau = None
-        i = len(etat_connecteurs) - 1
+        niveau = self.VIDE
+        i = len(etat_connecteurs)
         print(str(etat_connecteurs))
         print(str(i))
-        while niveau is None:
+        while i > 0:
             i = i - 1
             if etat_connecteurs[i]["etat"]:
                 niveau = etat_connecteurs[i]["niveau"]
