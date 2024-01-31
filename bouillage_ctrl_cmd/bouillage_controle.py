@@ -273,8 +273,9 @@ class NiveauCtrlCmd:
     def traiter_event_detect_pour_sonde_niveau(self, channel=None):
         self.logger.debug("traiter_event_detect_pour_sonde_niveau channel: {channel}".format(channel=channel))
         nouveau_niveau = self.mesurer_niveau(channel=channel)
-        msg = "Niveau avant mesure: {0}. Nouveau niveau {1}".format(self.NIVEAU, nouveau_niveau)
-        self.logger.info(msg)
+        if nouveau_niveau != self.NIVEAU:
+            msg = "Niveau avant mesure: {0}. Nouveau niveau {1}".format(self.NIVEAU, nouveau_niveau)
+            self.logger.info(msg)
 
         if nouveau_niveau != self.NIVEAU and nouveau_niveau != self.ERREUR:
             if nouveau_niveau < self.NIVEAU and nouveau_niveau <= self.BAS:
@@ -316,6 +317,7 @@ class NiveauCtrlCmd:
                 self.direction = "montant"
             else: # Sinon, le niveau descend.
                 self.direction = "descendant"
+            self.logger.debug("La direction du niveau d'eau est {}".format(self.direction))
         else:
             self.direction = "stable"
 
