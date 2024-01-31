@@ -331,8 +331,8 @@ class NiveauCtrlCmd:
             self.direction = "stable"
 
         self.last_event = channel
-        self.logger.info("Direction: {direction}".format(direction=self.direction))
-        self.logger.info("Etat pompe en action: {pompe}".format(pompe=self.pompe_en_action))
+        self.logger.debug("Direction: {direction}".format(direction=self.direction))
+        self.logger.debug("Etat pompe en action: {pompe}".format(pompe=self.pompe_en_action))
         if self.direction == "montant" and not self.pompe_en_action:
             self.logger.warning("Alerte, le niveau monte et la pompe n'est pas en action")
             alerte = self.message_alerte_niveau_monte_pompe_off.copy()
