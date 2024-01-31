@@ -186,10 +186,11 @@ class NiveauCtrlCmd:
         pull_up_down = GPIO.PUD_DOWN
         callback = self.traiter_event_detect_pour_sonde_niveau
         for connecteur in self.info_niveaux:
-            self.logger.info ("setup connecteur {0} mode: {1}".format(
-                connecteur["broche"], 
-                mode))
-            GPIO.setup(connecteur["broche"], mode, pull_up_down=pull_up_down, detect=detect, callback=callback)
+            if "broche" in connecteur:
+                self.logger.info ("setup connecteur {0} mode: {1}".format(
+                    connecteur["broche"], 
+                    mode))
+                GPIO.setup(connecteur["broche"], mode, pull_up_down=pull_up_down, detect=detect, callback=callback)
         # Initier les autres connecteurs
         for connecteur in self.connecteurs:
             self.logger.info ("setup connecteur {0} mode: {1}".format(
@@ -285,11 +286,12 @@ class NiveauCtrlCmd:
     def mesurer_niveau(self, channel=None):
         etat_connecteurs = []
         for connecteur in self.info_niveaux:
-            etat_niveau = {}
-            etat_niveau["niveau"] = connecteur["niveau"]
-            etat_niveau["etat"] = GPIO.input(connecteur["broche"])
-            etat_connecteurs.append(etat_niveau)
-            self.logger.debug("etat niv {niveau}: {etat}".format(connecteur["display"], etat_niveau))    
+            if "broche" in connecteur:
+                etat_niveau = {}
+                etat_niveau["niveau"] = connecteur["niveau"]
+                etat_niveau["etat"] = GPIO.input(connecteur["broche"])
+                etat_connecteurs.append(etat_niveau)
+                self.logger.debug("etat niv {niveau}: {etat}".format(connecteur["display"], etat_niveau))    
 
         # Trouver la sonde la plus haute dont l'état est 1
         niveau = None
@@ -302,7 +304,7 @@ class NiveauCtrlCmd:
         niveau_sonde_channel = None
         # Trouver le niveau associé à la broche qui a provoqué l'appel
         for info_niveau in self.info_niveaux:
-            if (channel == info_niveau["broche"]):
+            if ("broche" in info_niveau and channel == info_niveau["broche"]):
                 niveau_sonde_channel = info_niveau["niveau"]
                 break;
         # Si la sonde qui a provoqué l'appel est la plus haute qui à l'état 1, le niveau monte.    
