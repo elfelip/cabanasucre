@@ -140,6 +140,18 @@ class NiveauCtrlCmd:
         "display": "TEMP_BASE",
         "message": "La température de base de bouillage a été établie"
     }
+    message_alerte_niveau_monte_pompe_off = {
+        "niveau": 0,
+        "alerte": True,
+        "display": "NIV_UP_PUMP_OFF",
+        "message": "Le niveau baisse mais la pompe fonctionne"
+    }
+    message_alerte_niveau_baisse_pompe_on = {
+        "niveau": 0,
+        "alerte": True,
+        "display": "NIV_DOWN_PUMP_ON",
+        "message": "Le niveau baisse mais la pompe fonctionne"
+    }
     dernieres_temperatures = []
     nb_mesures_temp_pour_calcule_base = 5
     ecart_pour_fin_bouillage = 4
@@ -317,17 +329,22 @@ class NiveauCtrlCmd:
                 self.direction = "montant"
             else: # Sinon, le niveau descend.
                 self.direction = "descendant"
-            self.logger.debug("La direction du niveau d'eau est {}".format(self.direction))
         else:
             self.direction = "stable"
 
         self.last_event = channel
-        self.logger.debug("Direction: {direction}".format(direction=self.direction))
-        self.logger.debug("Etat pompe en action: {pompe}".format(pompe=self.pompe_en_action))
+        self.logger.info("Direction: {direction}".format(direction=self.direction))
+        self.logger.info("Etat pompe en action: {pompe}".format(pompe=self.pompe_en_action))
         if self.direction == "montant" and not self.pompe_en_action:
-            self.logger.warning("Alerte, le niveau monte et la pompe n'est pas en action") 
+            self.logger.warning("Alerte, le niveau monte et la pompe n'est pas en action")
+            alerte = self.message_alerte_niveau_monte_pompe_off.copy()
+            alerte['niveau'] = niveau
+            self.publier_alerte(contenu_message=alerte)
         if self.direction == "descendant" and self.pompe_en_action:
             self.logger.warning("Alerte, le niveau descend et la pompe est en action")
+            alerte = self.message_alerte_niveau_baisse_pompe_on.copy()
+            alerte['niveau'] = niveau
+            self.publier_alerte(contenu_message=alerte)
 
         return niveau
 
