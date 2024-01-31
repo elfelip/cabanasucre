@@ -294,7 +294,7 @@ class NiveauCtrlCmd:
                 etat_niveau["niveau"] = connecteur["niveau"]
                 etat_niveau["etat"] = GPIO.input(connecteur["broche"])
                 etat_connecteurs.append(etat_niveau)
-                self.logger.debug("etat niv {niveau}: {etat}".format(connecteur["display"], etat_niveau))    
+                self.logger.debug("etat niv {niveau}: {etat}".format(niveau=connecteur["display"], etat=etat_niveau["etat"]))    
 
         # Trouver la sonde la plus haute dont l'état est 1
         niveau = None
