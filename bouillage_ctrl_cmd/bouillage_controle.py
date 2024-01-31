@@ -311,10 +311,13 @@ class NiveauCtrlCmd:
                 niveau_sonde_channel = info_niveau["niveau"]
                 break;
         # Si la sonde qui a provoqué l'appel est la plus haute qui à l'état 1, le niveau monte.    
-        if niveau_sonde_channel == niveau:
-            self.direction = "montant"
-        else: # Sinon, le niveau descend.
-            self.direction = "descendant"
+        if niveau != self.NIVEAU:
+            if niveau_sonde_channel == niveau:
+                self.direction = "montant"
+            else: # Sinon, le niveau descend.
+                self.direction = "descendant"
+        else:
+            self.direction = "stable"
 
         self.last_event = channel
         self.logger.debug("Direction: {direction}".format(direction=self.direction))
