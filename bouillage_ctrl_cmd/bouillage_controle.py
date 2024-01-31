@@ -217,7 +217,7 @@ class NiveauCtrlCmd:
         self.arreter_pompe()
         self.verifier_niveau_tonne()
         self.NIVEAU = self.mesurer_niveau()
-        if self.NIVEAU < self.NORMAL:
+        if self.NIVEAU < self.BAS:
             self.demarrer_pompe()
         self.afficher_niveau()
         self.kafka_config = obtenirConfigurationsProducteurDepuisVariablesEnvironnement() if 'BOOTSTRAP_SERVERS' in os.environ else {}
@@ -295,12 +295,10 @@ class NiveauCtrlCmd:
                 etat_niveau["etat"] = GPIO.input(connecteur["broche"])
                 etat_connecteurs.append(etat_niveau)
                 self.logger.debug("etat niv {niveau}: {etat}".format(niveau=connecteur["display"], etat=etat_niveau["etat"]))    
-
+        self.logger.debug("Etat connecteur: {}".format(str(etat_connecteurs)))
         # Trouver la sonde la plus haute dont l'état est 1
         niveau = self.VIDE
         i = len(etat_connecteurs)
-        print(str(etat_connecteurs))
-        print(str(i))
         while i > 0:
             i = i - 1
             if etat_connecteurs[i]["etat"]:
@@ -340,7 +338,7 @@ class NiveauCtrlCmd:
             self.logger.info("Il y a de l'eau dans la tonne")
             self.pompe_enabled = True
             self.mesurer_niveau()
-            if self.NIVEAU < self.NORMAL:
+            if self.NIVEAU < self.BAS:
                 self.demarrer_pompe()
         else:
             self.logger.warning("Il n'y a plus d'eau dans la tonne.")
