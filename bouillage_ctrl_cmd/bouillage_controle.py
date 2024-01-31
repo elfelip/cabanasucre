@@ -192,7 +192,7 @@ class NiveauCtrlCmd:
                     mode))
                 GPIO.setup(connecteur["broche"], mode, pull_up_down=pull_up_down)
                 self.logger.info ("add_event_detect connecteur: {0}, detect {1}, callback : {2}".format(
-                    connecteur["numero"], 
+                    connecteur["broche"], 
                     detect,
                     callback))
                 GPIO.add_event_detect(connecteur["broche"], detect, callback=callback, bouncetime=200)
