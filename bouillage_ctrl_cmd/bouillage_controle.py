@@ -187,7 +187,7 @@ class NiveauCtrlCmd:
                 "numero": self.BROCHE_POMPE,
                 "nom": "POMPE",
                 "mode": GPIO.OUT,
-                "initial": GPIO.HIGH
+                "initial": GPIO.LOW
             }
         ]
         self.logger.info("setmode: {0}".format(self.MODE))
