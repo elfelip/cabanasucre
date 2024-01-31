@@ -298,7 +298,7 @@ class NiveauCtrlCmd:
 
         # Trouver la sonde la plus haute dont l'état est 1
         niveau = None
-        i = self.MAX
+        i = len(etat_connecteurs) - 1
         while niveau is None:
             i = i - 1
             if etat_connecteurs[i]["etat"]:
