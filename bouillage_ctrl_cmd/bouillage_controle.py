@@ -190,7 +190,12 @@ class NiveauCtrlCmd:
                 self.logger.info ("setup connecteur {0} mode: {1}".format(
                     connecteur["broche"], 
                     mode))
-                GPIO.setup(connecteur["broche"], mode, pull_up_down=pull_up_down, detect=detect, callback=callback)
+                GPIO.setup(connecteur["broche"], mode, pull_up_down=pull_up_down)
+                self.logger.info ("add_event_detect connecteur: {0}, detect {1}, callback : {2}".format(
+                    connecteur["numero"], 
+                    detect,
+                    callback))
+                GPIO.add_event_detect(connecteur["broche"], detect, callback=callback, bouncetime=200)
         # Initier les autres connecteurs
         for connecteur in self.connecteurs:
             self.logger.info ("setup connecteur {0} mode: {1}".format(
@@ -199,6 +204,12 @@ class NiveauCtrlCmd:
             if connecteur["mode"] == GPIO.IN:
                 pull_up_down = connecteur["pull_up_down"] if "pull_up_down" in connecteur else GPIO.PUD_DOWN
                 GPIO.setup(connecteur["numero"], connecteur["mode"], pull_up_down=pull_up_down)
+                if "callback" in connecteur and "detect" in connecteur:
+                    self.logger.info ("add_event_detect connecteur: {0}, detect {1}, callback : {2}".format(
+                        connecteur["numero"], 
+                        connecteur["detect"],
+                        connecteur["callback"]))
+                    GPIO.add_event_detect(connecteur["numero"], connecteur["detect"], callback=connecteur["callback"], bouncetime=200)
             elif connecteur["mode"] == GPIO.OUT:
                 initial = connecteur["initial"] if "initial" in connecteur else GPIO.LOW
                 GPIO.setup(connecteur["numero"], connecteur["mode"], initial=initial)
@@ -214,14 +225,6 @@ class NiveauCtrlCmd:
         os.system('sudo modprobe w1-gpio')
         os.system('sudo modprobe w1-therm')
         self.publier_niveau(niveau=self.NIVEAU)
-        for connecteur in self.connecteurs:
-            if connecteur["mode"] == GPIO.IN:
-                if "callback" in connecteur and "detect" in connecteur:
-                    self.logger.info ("add_event_detect connecteur: {0}, detect {1}, callback : {2}".format(
-                        connecteur["numero"], 
-                        connecteur["detect"],
-                        connecteur["callback"]))
-                    GPIO.add_event_detect(connecteur["numero"], connecteur["detect"], callback=connecteur["callback"], bouncetime=200)
         
 
     def afficher_niveau(self, niveau=None):
