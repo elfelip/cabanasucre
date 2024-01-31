@@ -450,9 +450,9 @@ parser.add_argument('-m',
 args = parser.parse_args()
 
 ctrl_cmd = NiveauCtrlCmd(log_level=args.loglevel.upper(),
-                         niveau_bas=args.niveaubas(),
-                         niveau_haut=args.niveauhaut(),
-                         niveau_max=args.niveaumax())
+                         niveau_bas=args.niveaubas,
+                         niveau_haut=args.niveauhaut,
+                         niveau_max=args.niveaumax)
 
 def signal_handler(sig, frame):
     ctrl_cmd.arreter_pompe()
