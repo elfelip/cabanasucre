@@ -355,7 +355,7 @@ class NiveauCtrlCmd:
         sonde_niveau_tonne = GPIO.input(self.BROCHE_TONNE)
         self.logger.debug("Sonde niveau tonne: {}".format(sonde_niveau_tonne))
         if sonde_niveau_tonne:
-            self.logger.info("Il y a de l'eau dans la tonne")
+            self.logger.debug("Il y a de l'eau dans la tonne")
             self.pompe_enabled = True
             self.mesurer_niveau()
             if self.NIVEAU < self.BAS:
