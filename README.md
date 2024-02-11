@@ -89,13 +89,6 @@ Pré-requis
 	Installer les requirements.txt
         cd cabanasucre
 	    python3 -m pip install -r requirements.txt
-    Cloner le projet lcd suivant:
-        mkdir the-rapberry-pi-guy
-        cd the-rapsberry-pi-guy
-        git clone https://github.com/the-raspberry-pi-guy/lcd.git
-    Installer les pré-requis:
-        cd lcd
-        sudo ./install.sh
 
 
 Pour configurer la connexion au cluster Kafka, définir la variable d'environnement BOOTSTRAP_SERVERS en ajoutant la ligne suivante dans le fichier /home/pi/.bashrc:
@@ -111,6 +104,10 @@ Lancer l'interface de confiration raspi_config pour qu'une session pour l'utilis
     sudo raspi-config
     Sélectionner 1 System Options -> S5 Boot / Auto login
     Sélectionner B2 Console Autologin Text console, automatically logged in as 'pi' user
+    Sélectionner 3 Interface Options
+    Sélectionner I5 I2C Enable/Disable automatic loading of I2C kernel module. Répondre Yes
+    Finish
+    Reboot now Yes
 
 ### Développement
 
