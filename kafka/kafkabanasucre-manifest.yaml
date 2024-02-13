@@ -90,7 +90,7 @@ kind: KafkaTopic
 metadata:
   name: bouillage.niveau
   labels:
-    strimzi.io/cluster: kafkabanasucres
+    strimzi.io/cluster: kafkabanasucre
   namespace: cabanasucre 
 spec: 
   partitions: 1
