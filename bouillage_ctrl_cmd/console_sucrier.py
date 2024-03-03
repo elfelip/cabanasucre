@@ -11,7 +11,7 @@ from inspqcommun.kafka.consommateur import obtenirConfigurationsConsommateurDepu
 from confluent_kafka import OFFSET_END, Consumer
 import drivers
 import argparse
-from statistics import mean, pstdev
+
 from time import sleep
 
 class ConsoleSucrier:
@@ -23,10 +23,7 @@ class ConsoleSucrier:
     ligne_niveau = 0
     ligne_temp = 1
     ligne_alerte = 2
-    dernieres_temperatures = []
-    nb_mesures_temp_pour_calcule_base = 3
-    ecart_pour_fin_bouillage = 3
-    temperature_base = None
+    
     messages = ["Console Sucrier", "Attente msg...","Aucune alerte"]
 
     premiere_ligne = 0
@@ -65,42 +62,15 @@ class ConsoleSucrier:
                 if msg.error():
                     self.logger.error("Erreur Kafka: {0} {1}".format(msg.error().code(), msg.error().str()))
                 if msg.topic() == self.topic_temp:
-                    self.traiter_temperature(key=decode_from_bytes(msg.key()), value=decode_from_bytes(msg.value()))
+                    self.afficher_temperature(key=decode_from_bytes(msg.key()), value=decode_from_bytes(msg.value()))
                 elif msg.topic() == self.topic_niveau:
                     self.afficher_niveau(key=decode_from_bytes(msg.key()), value=decode_from_bytes(msg.value()))
                 elif msg.topic() == self.topic_alerte:
                     self.lancer_alerte(key=decode_from_bytes(msg.key()), value=decode_from_bytes(msg.value()))
 
-    def traiter_temperature(self, key, value):
-        self.logger.info("{0}: Temperature: {1}".format(key, value))
+    def afficher_temperature(self, key, value):
+        self.logger.info("{0}: Température: {1} C".format(key, value))
         self.messages[self.ligne_temp] = "Temp: {temp} C".format(temp=value)
-        if self.temperature_base is None:
-            self.calculer_temperature_base(temp=value)
-        elif value > self.temperature_base + self.ecart_pour_fin_bouillage:
-            self.logger.warning("La temperature de bouillage est atteinte {temp}".format(temp=value))
-            self.messages[self.ligne_alerte] = "Fin boil {temp}".format(temp=value)
-        elif value < self.temperature_base - 0.5:
-            self.logger.warning("La temperature est sous la temperature de base {temp}".format(temp=value))
-            self.messages[self.ligne_alerte] = "Tmp basse {temp}".format(temp=value)
-
-    def calculer_temperature_base(self, temp):
-        if len(self.dernieres_temperatures) < self.nb_mesures_temp_pour_calcule_base:
-            self.logger.debug("Ajout {temp} dans dernieres temperatures".format(temp=temp))
-            self.dernieres_temperatures.append(temp)
-        else:
-            self.logger.debug("Remplacer {temp1} par {temp2} dans dernieres temperatures".format(
-                temp1=self.dernieres_temperatures[0],
-                temp2=temp))
-            for mesure in range(self.nb_mesures_temp_pour_calcule_base - 1):
-                self.dernieres_temperatures[mesure] = self.dernieres_temperatures[mesure + 1]
-            self.dernieres_temperatures[self.nb_mesures_temp_pour_calcule_base - 1] = temp
-
-        if len(self.dernieres_temperatures) >= self.nb_mesures_temp_pour_calcule_base and temp > 95:
-            ecart_type = pstdev(self.dernieres_temperatures)
-            self.logger.debug("Ecart type temp: {ecart}".format(ecart=ecart_type))
-            if ecart_type < 0.25:
-                self.temperature_base = mean(self.dernieres_temperatures)
-                self.logger.info("Temperature de base établi à {temp}".format(temp=self.temperature_base))
 
     def afficher_niveau(self, key, value):
         self.logger.info("{0}: Niveau: {1} {2}".format(key, value['niveau'], value['message']))
@@ -108,7 +78,7 @@ class ConsoleSucrier:
 
     def lancer_alerte(self, key, value):
         self.logger.warning("{0}: Alerte niveau: {1} {2}".format(key, value['niveau'], value['message']))
-        self.messages[self.ligne_alerte] = "Alerte: {display}".format(display=value["display"])
+        self.messages[self.ligne_alerte] = "{display}".format(display=value["display"])
         
     def rafraichir_affichage(self):
         while True:
