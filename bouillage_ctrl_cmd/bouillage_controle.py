@@ -157,7 +157,7 @@ class NiveauCtrlCmd:
     ecart_pour_fin_bouillage = 4
     temperature_base = None
     
-    def __init__(self, log_level=logging.INFO, niveau_bas=2, niveau_haut=4, niveau_max=8):
+    def __init__(self, log_level=logging.INFO, niveau_bas=BAS, niveau_haut=HAUT, niveau_max=MAX):
         format = "%(asctime)s: %(message)s"
         logging.basicConfig(
             format=format,
@@ -459,17 +459,17 @@ parser.add_argument('-log',
                     help='Provide logging level. Example --loglevel debug, default=info' )
 parser.add_argument('-l',
                     '--niveaubas',
-                    default=2,
+                    default=NiveauCtrlCmd.BAS,
                     type=int,
                     help='Niveau minimum pour le démarrage de la pompe. Example --niveaubas=3, défaut=2')
 parser.add_argument('-u',
                     '--niveauhaut',
-                    default=4,
+                    default=NiveauCtrlCmd.HAUT,
                     type=int,
                     help="Niveau a atteindre pour l'arrêt de la pompe. Example --niveauhaut=6, défaut=4")
 parser.add_argument('-m',
                     '--niveaumax',
-                    default=8,
+                    default=NiveauCtrlCmd.MAX,
                     type=int,
                     help="Niveau maximum possible. Example --niveaumax=8, défaut=8")
 args = parser.parse_args()

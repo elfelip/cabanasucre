@@ -2,14 +2,29 @@
 
 Projet d'automatisation du bouillage de l'eau d'érable pour St-Red
 
+# Le procédé
+
+Le bouillage de l'eau d'érable, dans ce projet, se fait dans un chaudron à blé d'inde et un bruleur au propane. 
+L'eau d'érable récolté est versé dans une tonneau.
+Une pompe 12 volt permet de transférer l'eau du tonneau vers le le chaudron à blé d'inde.
+Le système permet de garder un certain niveau dans le chaudron lors du bouillage afin d'optimiser l'évaporation de l'eau et la consommation de gaz.
+Les niveaux haut et bas entre lesquels l'eau est maintenu est configurable. La différence entre les niveaux de la sonde est d'à peu près un pouce.
+Par exemple, si le niveau bas est 2 et le niveau haut est 3, le niveau d'eau maintenu pas le système sera entre 2 et 3 pouces du fond du chaudron.
+La sonde possède 8 niveau. Le niveau minimum est donc de 1 pouce et le niveau maximum est de 8 pouces. Si le niveau d'eau descend sous le niveau minimum, une alerte est lancé et le bouillage devra être arrêté. Si le niveau monte au delà de 8 pouces, la pompe sera arrêté si elle est en fonction et une alerte sera lancé. 
+
 # Composants
 
-bouillage_ctrl_cmd
-kafkabanansucre
+Voici les composants de ce projet:
+
+    bouillage_ctrl_cmd: Composant controlant le processus et affichant les informations.
+        bouillage_controle: Contrôle la pompe, mesure la température et diffuse les informations sur le procédé.
+        console_sucrier: Affiche les informations et les messages du processus.
+    kafkabanansucre: Courtier de messagerie permettant la communication entre le contrôleur et la console.
 
 ## Kafkabanasucre
 
 Pré-requis:
+
     Avoir un cluster Openshift ou OKD.
     L'opérateur Strimzi doit être déployé sur le cluster Openshift/OKD
     Les clients kubectl et oc doivent être installé sur le poste et ils doivent être configurés pour se brancher au cluster OKD avec des droits d'administrations.
@@ -30,14 +45,16 @@ Pour créer le cluster kafkabanasucre, suivre les étapes suivantes:
     On peut consommer les messages d'un topic avec la commande suivante:
         docker run -ti --rm --name kafkatools --entrypoint kafka-console-consumer confluentinc/cp-kafka:latest --bootstrap-server kube06.lacave.info:31092,kube07.lacave.info:31093,kube08.lacave.info:31094 --topic bouillage.niveau --from-beginning --property print.key=true
 
+Le projet peut fonctionner avec un cluster Kafka à un noeud sur Docker. Je vais éventuellement ajouter un fichier docker-compose mais il y a plein d'exemple dans la documentation de Kafka.
+
 ## bouillage_ctrl_cmd
 
-Ce composant sert à mesurer la température du bouillage ainsi qu'à contrôler le niveau d'eau d'érable dans l'évaporateur.
-Le contrôle de niveau d'eau se fait grâce à une sonde trempée dans l'évaporateur ainsi qu'un valve relié au réservoir d'eau d'érable.
-Si le niveau d'eau tombe sous la sonde de niveau bas, la valve est ouverte et l'eau d'érable du réservoir est ajoutée dans l'évaporateur. Dès que l'eau d'érable atteint la sonde de niveau haut, la valve est alors fermée.
+Ce composant sert à mesurer la température du bouillage ainsi qu'à contrôler le niveau d'eau d'érable dans le chaudron.
+Le contrôle de niveau d'eau se fait grâce à une sonde trempée dans l'évaporateur ainsi qu'une pompe et des tuyaux reliants le réservoir d'eau d'érable et le chaudron.
+Si le niveau d'eau tombe sous la sonde de niveau bas, la pompe est démarrée et l'eau d'érable du réservoir est ajoutée dans le chaudron. Dès que l'eau d'érable atteint la sonde de niveau haut, la pompe est alors arrêtée.
 Si le niveau d'eau tombe sous la sonde de niveau minimum ou par dessus la sonde de niveau maximum, une alerte est envoyée.
 
-Les mesures de niveau, de température ainsi que les alertes sont publiés sur le cluster Kafka afin d'être transmis au sucrier.
+Les mesures de niveau, de température ainsi que les alertes sont publiés sur le cluster Kafka afin d'être transmises au sucrier.
 
 Il y a deux programme inclus dans ce conmposant:
 
@@ -77,7 +94,15 @@ Activer w1-temp toujours avec raspi-config:
     Sélectionner 3 Interface Options -> I7 1-Wire
 
 
-## Console sucrier
+### Sonde de niveau
+
+La sonde de niveau est constitué de 9 fils d'acier incoxydable recouvert de plastique. Ces fils sont dévouverts de leur gaine à leur base sur à peu près 3 mm pour permettre le contact électrique. Le premier fil se rend presque au fond du chaudron. Le deuxième fil est placé à un pouce du fond, le troisième à 2 pouces du fond ainsi de suite jusqu'au niveau maximum de 8 pouces.
+
+### Sonde de température.
+
+La sone de température est un sonde DS8. Elle est relié au Raspberry py 0 par l'interface 1-wire.
+
+### Console sucrier
 
 Sur le Rasberry Pi3 on installe un affichage a cristaux liquide permettant de diffuser les différents messages emis pas le controleur.
 
