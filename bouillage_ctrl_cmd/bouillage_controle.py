@@ -28,8 +28,8 @@ class NiveauCtrlCmd:
     BROCHE_TONNE = 16 # 36
     ERREUR = -1
     VIDE = 0
-    BAS = 2
-    HAUT = 3
+    BAS = 1
+    HAUT = 2
     MAX = 8
     NIVEAU = 0
     info_niveaux = [
