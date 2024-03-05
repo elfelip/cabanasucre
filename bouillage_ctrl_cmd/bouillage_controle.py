@@ -169,7 +169,6 @@ class NiveauCtrlCmd:
         self.logger=logging.getLogger('bouillage_controle')
         self.logger.setLevel(log_level)
         fileHandler = logging.FileHandler("{0}/{1}.log".format(self.log_path, self.log_file_name))
-        fileHandler.setFormatter(format)
         self.logger.addHandler(fileHandler)
         self.BAS = niveau_bas
         self.logger.info("Le niveau bas est {}".format(self.BAS))
