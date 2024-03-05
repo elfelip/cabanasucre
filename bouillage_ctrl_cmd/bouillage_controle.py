@@ -157,7 +157,7 @@ class NiveauCtrlCmd:
     ecart_pour_fin_bouillage = 4
     temperature_base = None
     log_path = "/var/log"
-    log_file_name = "cabanasucre.log"
+    log_file_name = "cabanasucre"
     
     def __init__(self, log_level=logging.INFO, niveau_bas=BAS, niveau_haut=HAUT, niveau_max=MAX):
         format = "%(asctime)s: %(message)s"
