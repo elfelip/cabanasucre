@@ -156,6 +156,8 @@ class NiveauCtrlCmd:
     nb_mesures_temp_pour_calcule_base = 5
     ecart_pour_fin_bouillage = 4
     temperature_base = None
+    log_path = "/var/log"
+    log_file_name = "cabanasucre.log"
     
     def __init__(self, log_level=logging.INFO, niveau_bas=BAS, niveau_haut=HAUT, niveau_max=MAX):
         format = "%(asctime)s: %(message)s"
@@ -166,6 +168,9 @@ class NiveauCtrlCmd:
             datefmt="%H:%M:%S")
         self.logger=logging.getLogger('bouillage_controle')
         self.logger.setLevel(log_level)
+        fileHandler = logging.FileHandler("{0}/{1}.log".format(self.log_path, self.log_file_name))
+        fileHandler.setFormatter(format)
+        self.logger.addHandler(fileHandler)
         self.BAS = niveau_bas
         self.logger.info("Le niveau bas est {}".format(self.BAS))
         self.HAUT = niveau_haut
