@@ -29,7 +29,7 @@ class NiveauCtrlCmd:
     ERREUR = -1
     VIDE = 0
     BAS = 1
-    HAUT = 2
+    HAUT = 3
     MAX = 8
     NIVEAU = 0
     info_niveaux = [
