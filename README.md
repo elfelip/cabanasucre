@@ -10,7 +10,13 @@ Une pompe 12 volt permet de transférer l'eau du tonneau vers le le chaudron à 
 Le système permet de garder un certain niveau dans le chaudron lors du bouillage afin d'optimiser l'évaporation de l'eau et la consommation de gaz.
 Les niveaux haut et bas entre lesquels l'eau est maintenu est configurable. La différence entre les niveaux de la sonde est d'à peu près un pouce.
 Par exemple, si le niveau bas est 2 et le niveau haut est 3, le niveau d'eau maintenu pas le système sera entre 2 et 3 pouces du fond du chaudron.
-La sonde possède 8 niveau. Le niveau minimum est donc de 1 pouce et le niveau maximum est de 8 pouces. Si le niveau d'eau descend sous le niveau minimum, une alerte est lancé et le bouillage devra être arrêté. Si le niveau monte au delà de 8 pouces, la pompe sera arrêté si elle est en fonction et une alerte sera lancé. 
+La sonde possède 8 niveau. Le niveau minimum est donc de 1 pouce et le niveau maximum est de 8 pouces. Si le niveau d'eau descend sous le niveau minimum, une alerte est lancé et le bouillage devra être arrêté. Si le niveau monte au delà de 8 pouces, la pompe sera arrêté si elle est en fonction et une alerte sera lancé.
+
+Ce procédé est utilisé pour faire une première réduction de l'eau d'érable pour en produire ce qu'on appelle du réduit. Rendu à cette étape, on peut décider de prendre le réduit avec du Gin. C'est bon pour un verre ou deux mais apès, l'idéal c'est d'en faire du sirop d'érable.
+
+Pour la finition, le réduit est transféré dans un chaudron qui est chauffé sur une cuisinière électrique.
+Les sondes de niveau et de température sont installées dans le chaudron et le système de contrôle est relancé.
+Un processus de détection de la température de base pour le bouillage est initié. Le but est de détecter la température d'ébulition de l'eau qui varie avec la pression athmosphérique. Dès que la température s'est stabilisé, elle est mise en mémoire. Une alerte sera lancé quand le température sera de 4 degrés celcius de plus que la valeur de base mesuré. Le sirop d'érable est alors prêt.
 
 # Composants
 
@@ -134,7 +140,23 @@ Lancer l'interface de confiration raspi_config pour qu'une session pour l'utilis
     Finish
     Reboot now Yes
 
-### Développement
+# Équipement nécessaires
+Voici la liste des éléments nécessaires pour ce projet:
+
+    2 Raspberry pi avec cartes Wifi. Pour mon système, j'ai un Raspberry PI Zero pour le contrôleur et un Raberry PI 3 pour la console.
+    Un réseau sans fil.
+    Un serveur Kafka
+    Une batterie 12v pour alimenter la pompe et le Raspberry PI du contrôleur.
+    Un panneau solaire 12v sur la cabane à sucre pour recharger la batterie.
+    Une pompe a eau de VR 12 volts
+    Une plaque de cicuit électrique pour les divers connexions avec le Raspberry pi.
+    Un fil 20 broches et un connecteur pour relier le circuit électrique avec le Raspberry pi.
+    Une sonde de température.
+    Un affichage LED 2 par 20.
+    Un branchement allume cigare et un adaptateur USB allume cigare pour alimenter le Raspberry PI avec la batterie 12 volts.
+    Idéalement un abri pour éviter d'endomager le système lors du bouillage à l'extérieur. Un jeux extérieur d'enfant converti en cabane est l'idéal.
+    
+# Développement
 
 Pour pouvoir tester le code sur une autre plateforme que le Raspberry Pi, on doit installer les deux modules bidon suivants:
 
