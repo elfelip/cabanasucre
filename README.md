@@ -144,7 +144,7 @@ Lancer l'interface de confiration raspi_config pour qu'une session pour l'utilis
 Voici la liste des éléments nécessaires pour ce projet avec des références Amazon:
 
     Unité de calcules:
-        2 Raspberry pi avec cartes Wifi. Pour mon système, j'ai un Raspberry PI Zero pour le contrôleur et un Rasberry PI 3 pour la console. Raspberry PI Zero 2W avec têtes pré-soudées (40$). Raspberry PI 4 Modèle B (88$)
+        2 Raspberry pi avec cartes Wifi. Pour mon système, j'ai un Raspberry PI Zero pour le contrôleur et un Rasberry PI 3 pour la console. Raspberry PI Zero 2W avec têtes pré-soudées (40$). Raspberry PI 4 Modèle B (88$). Pour utiliser un Raspberry PI de première génération comme dans mon cas, il faut ajouter une carte réseau sans fil USB et un adaptateur USB vers micro USB.
         Un réseau sans fil.
         Un serveur Kafka
     Alimentation électrique:
@@ -158,16 +158,86 @@ Voici la liste des éléments nécessaires pour ce projet avec des références 
         Un affichage LED 2 par 20. FREENOVE I2C Lot de 2 modules LCD 1602 compatibles avec Arduino et Raspberry PI LCD1602 (17$). 
         Une sonde de température. Micreen lot de 2 modules capteur de température DS18B20 avec sonde étanche en acier inoxydable avec puce pour Arduino et Raspberry PI (14$)
         Résistance de 220 ohms
-        Un fil 20 broches et un connecteur pour relier le circuit électronique avec le Raspberry pi. Pour les vieux de la vieille, un fil de disque dur IDE.
+        Un fil 40 broches et un connecteur pour relier le circuit électronique avec le Raspberry pi. Pour les vieux de la vieille, un fil de disque dur IDE. Gowoops Lot de 5 câbles plats GPIO 20 cm 40 broches pour Raspberry PI 3, 2 modèles B B+ (21,50$).
+        Un relais 5V. Geekstory Lot de 5 modules de relais SRD-05VDC-SL-C à un canal 5V avec câble Dupont 20 cm pour Arduino (37,59$). Options sans circuits ni câble disponible en lot de 10 pour 5$. Demande plus de soudure.
     Sondes (température et niveau):
-        Une prise jack 1/8 stéréo femelle. Longdex lot de 3 connecteurs jack stéréo 3,5mm (15$)
-        Une prise jack 1/8 stéréo mâle. NewFanatasia Lot de 2 connecteurs mâles 3 pôles 3,5mm en métal argenté (12,50$).
-        Un fil 4 brins habituellement utilisé pour les thermostats de maison.
-        Une prise DB9 mâle avec connecteur (anciennement utilisé pour relier les ports séries aux motherboards).
-        Une prise DB9 femelle avec fil 9 brins en cuivre à extrémité ouvert (anciennement utilisé pour les modems externes)
-        Du fil en acier inoxydable avec gaine en plastique. Au moins 20 pieds.
-        Idéalement un abri pour éviter d'endomager le système lors du bouillage à l'extérieur. Un jeux extérieur d'enfant converti en cabane est l'idéal.
+        Une prise jack 1/8 stéréo femelle. Longdex lot de 3 connecteurs jack stéréo 3,5 mm (15$)
+        Une prise jack 1/8 stéréo mâle. NewFanatasia Lot de 2 connecteurs mâles 3 pôles 3,5 mm en métal argenté (12,50$).
+        Un fil 3 brins habituellement utilisé pour les thermostats de maison. THE CIMPLE CO Fil de thermostat 18/3 cuivre massif 3m (22$)
+        Une prise DB9 mâle avec connecteur (anciennement utilisé pour relier les ports séries aux motherboards). Startech 1 port db9 16" port série BRacket vers en-tête 10 broches PLATE9M16LP (8$)
+        Une prise DB9 femelle avec fil 9 brins en cuivre à extrémité ouvert (anciennement utilisé pour les modems externes). XMSJSIY Câble adaptateur DB9 connecteur D-SUB 9 broches RS232 avec fil nu 22 AWG DB9 femelle (22,70$)
+        Du fil en acier inoxydable avec gaine en plastique. Au moins 20 pieds. MECCANIXITY Câble metallique de 30m X 1mm en acier inoxydable 304 avec revêtement en vinyle avec 10 manchons, 1mm de diamètre (18,39$). Avec ce fil ca prendrait une tige pour supporter la sonde. De mon côté, j'ai utilisé un fil rigide en acier galvnisé qui sert à attacher des clotures. Il se tient bien mais il a tendance à oxyder.
+    Évaporateur
+        Un bruleur au propane (comme pour le blé d'inde). Appareil de cuisson au propane 66000 BTU (CANAC 75$) 
+        Un grand chaudron de 48 litres. Marmite en aluminium 48 L (CANAC 66$)
+        Un réservoir de 20 livres de propane. Bombone de propane recyclée DPTP/(ODP) 20 lb (CANAC 43$)
+Total des côuts: Environ 675$. 
+
+Il faut idéalement un abri pour éviter d'endomager le système lors du bouillage à l'extérieur. Un jeux extérieur d'enfant converti en cabane est l'idéal.
+
+# Cricuits
+
+Voici les connexions à faire entre les différents éléments des cricuits et les broches des Raspberry PI. Le numéro de broche est utilisé et non l'identifiant GPIO dans les tableaux.
+
+## Sonde de niveau:
+
+La sonde de niveau est constitué de 9 broches placés à des hauteurs différentes. Elles sont décalés d'un pouce les une aux autres. La sonde peut donc musré des niveaux entre 0 et 8 pouces d'eau.
+
+    Niveau: Broche RPI zéro
+    Fond:   1               Une résistance de 220 ohms doit être placée entre la sonde et la broche du Rasberry PI
+    1       32
+    2       29
+    3       22
+    4       15
+    5       18
+    6       13
+    7       16
+    8       11
+
+## Relais et pompe
+
+Le relais permet de démarrer et arrêter la pompe. La broche 37 (GPIO 26) permet de commander la pompe.
+On peut placer un interrupteur entre la batterie et le Raspberry PI pour désactiver complètement la pompe
+
+    Relais          Broche RPI zéro
+    IN1             37
+    +               1 (3.3v)
+    -               2
+    |               Interrupteur
+    \
+                    Pompe
+    |_              +
+    Batterie
+    -               -
+    +               Interrupteur
+
+## Sonde de température
+
+La sonde de température est branché à la broche I2C du raspberry PI. Elle permet de mesurer la température de l'eau et indiquer lorsque le sirop est prêt.
+
+    Sonde           Broche RPI Zéro
+    DAT             7
+    Vcc             1 (3.3v)
+    Gnd             2
     
+## Sonde de niveau du réservoir d'eau d'érable.
+
+Pour savoir quand arrêter le processus, il faut savoir s'il reste de l'eau d'érable à bouillir. On met donc un fil a 2 broches a exxtrémité ouvert sur quelques mm (max 5 mm) dans le fonc du réservoir.
+
+    Sonde           Broche RPI Zéro
+    1               1 (3.3V)
+    2               36
+
+## Écran LCD
+
+Un écran LCD est connecté sur le Rasbperry PI 3 qui sert de console du surveillance du procédé.
+
+    LCD             Broche RPI 3
+    GND (Rouge)     6
+    Vcc (Noir)      4 (5V)
+    SDA             3
+    SCL             5
+
 # Développement
 
 Pour pouvoir tester le code sur une autre plateforme que le Raspberry Pi, on doit installer les deux modules bidon suivants:
