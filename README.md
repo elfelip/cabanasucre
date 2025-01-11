@@ -141,20 +141,32 @@ Lancer l'interface de confiration raspi_config pour qu'une session pour l'utilis
     Reboot now Yes
 
 # Équipement nécessaires
-Voici la liste des éléments nécessaires pour ce projet:
+Voici la liste des éléments nécessaires pour ce projet avec des références Amazon:
 
-    2 Raspberry pi avec cartes Wifi. Pour mon système, j'ai un Raspberry PI Zero pour le contrôleur et un Raberry PI 3 pour la console.
-    Un réseau sans fil.
-    Un serveur Kafka
-    Une batterie 12v pour alimenter la pompe et le Raspberry PI du contrôleur.
-    Un panneau solaire 12v sur la cabane à sucre pour recharger la batterie.
-    Une pompe a eau de VR 12 volts
-    Une plaque de cicuit électrique pour les divers connexions avec le Raspberry pi.
-    Un fil 20 broches et un connecteur pour relier le circuit électrique avec le Raspberry pi.
-    Une sonde de température.
-    Un affichage LED 2 par 20.
-    Un branchement allume cigare et un adaptateur USB allume cigare pour alimenter le Raspberry PI avec la batterie 12 volts.
-    Idéalement un abri pour éviter d'endomager le système lors du bouillage à l'extérieur. Un jeux extérieur d'enfant converti en cabane est l'idéal.
+    Unité de calcules:
+        2 Raspberry pi avec cartes Wifi. Pour mon système, j'ai un Raspberry PI Zero pour le contrôleur et un Rasberry PI 3 pour la console. Raspberry PI Zero 2W avec têtes pré-soudées (40$). Raspberry PI 4 Modèle B (88$)
+        Un réseau sans fil.
+        Un serveur Kafka
+    Alimentation électrique:
+        Une batterie 12v pour alimenter la pompe et le Raspberry PI du contrôleur. Batterie a décharge profonde 12 V 14 AH (67$).
+        Un panneau solaire 12v sur la cabane à sucre pour recharger la batterie. POWOXI chargeur de batterie solaire 7.5W 12 V (50$) 
+        Un branchement allume cigare et un adaptateur USB allume cigare pour alimenter le Raspberry PI avec la batterie 12 volts. HATMINI Lot de 3 prises allume-cigare femelle 18 AWG avec câble à extrémité ouverte 12/24V pour équipement de moins de 120W (14$).
+    Mécanique:
+        Une pompe a eau de VR 12 volts. SAILFLO Pompe à eau 12 V CC à diaphragme à amorcage automatique et interrupteur de pression (36$).
+    Circuit électronique:
+        Une plaque de cicuit électrique pour les divers connexions avec le Raspberry pi. Electronics-Salon D-1228 (7$)
+        Un affichage LED 2 par 20. FREENOVE I2C Lot de 2 modules LCD 1602 compatibles avec Arduino et Raspberry PI LCD1602 (17$). 
+        Une sonde de température. Micreen lot de 2 modules capteur de température DS18B20 avec sonde étanche en acier inoxydable avec puce pour Arduino et Raspberry PI (14$)
+        Résistance de 220 ohms
+        Un fil 20 broches et un connecteur pour relier le circuit électronique avec le Raspberry pi. Pour les vieux de la vieille, un fil de disque dur IDE.
+    Sondes (température et niveau):
+        Une prise jack 1/8 stéréo femelle. Longdex lot de 3 connecteurs jack stéréo 3,5mm (15$)
+        Une prise jack 1/8 stéréo mâle.
+        Un fil 4 brins habituellement utilisé pour les thermostats de maison.
+        Une prise DB9 mâle avec connecteur (anciennement utilisé pour relier les ports séries aux motherboards).
+        Une prise DB9 femelle avec fil 9 brins en cuivre à extrémité ouvert (anciennement utilisé pour les modems externes)
+        Du fil en acier inoxydable avec gaine en plastique. Au moins 20 pieds.
+        Idéalement un abri pour éviter d'endomager le système lors du bouillage à l'extérieur. Un jeux extérieur d'enfant converti en cabane est l'idéal.
     
 # Développement
 
