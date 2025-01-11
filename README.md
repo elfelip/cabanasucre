@@ -161,7 +161,7 @@ Voici la liste des éléments nécessaires pour ce projet avec des références 
         Un fil 20 broches et un connecteur pour relier le circuit électronique avec le Raspberry pi. Pour les vieux de la vieille, un fil de disque dur IDE.
     Sondes (température et niveau):
         Une prise jack 1/8 stéréo femelle. Longdex lot de 3 connecteurs jack stéréo 3,5mm (15$)
-        Une prise jack 1/8 stéréo mâle.
+        Une prise jack 1/8 stéréo mâle. NewFanatasia Lot de 2 connecteurs mâles 3 pôles 3,5mm en métal argenté (12,50$).
         Un fil 4 brins habituellement utilisé pour les thermostats de maison.
         Une prise DB9 mâle avec connecteur (anciennement utilisé pour relier les ports séries aux motherboards).
         Une prise DB9 femelle avec fil 9 brins en cuivre à extrémité ouvert (anciennement utilisé pour les modems externes)
