@@ -156,10 +156,11 @@ class NiveauCtrlCmd:
     nb_mesures_temp_pour_calcule_base = 5
     ecart_pour_fin_bouillage = 4
     temperature_base = None
-    log_path = "/var/log"
-    log_file_name = "cabanasucre"
     
-    def __init__(self, log_level=logging.INFO, niveau_bas=BAS, niveau_haut=HAUT, niveau_max=MAX):
+    
+    def __init__(self, log_level=logging.INFO, niveau_bas=BAS, niveau_haut=HAUT, niveau_max=MAX, log_path="/var/log", log_file_name="cabanasucre"):
+        self.log_path = log_path
+        self.log_file_name = log_file_name
         format = "%(asctime)s: %(message)s"
         logging.basicConfig(
             format=format,
@@ -476,12 +477,24 @@ parser.add_argument('-m',
                     default=NiveauCtrlCmd.MAX,
                     type=int,
                     help="Niveau maximum possible. Example --niveaumax=8, défaut=8")
+parser.add_argument('-p',
+                    '--logpath',
+                    default='/var/log',
+                    type=str,
+                    help='Répertoire du fichier de log. Example --logpath=/tmp, défaut=/var/log')
+parser.add_argument('-f',
+                    '--logfile',
+                    default='cabanasucre',
+                    type=str,
+                    help='Nom du fichier de log. Example --logfile=cabane, défaut=cabanasucre')
 args = parser.parse_args()
 
 ctrl_cmd = NiveauCtrlCmd(log_level=args.loglevel.upper(),
                          niveau_bas=args.niveaubas,
                          niveau_haut=args.niveauhaut,
-                         niveau_max=args.niveaumax)
+                         niveau_max=args.niveaumax,
+                         log_path=args.logpath,
+                         log_file_name=args.logfile)
 
 def signal_handler(sig, frame):
     ctrl_cmd.arreter_pompe()
