@@ -28,6 +28,12 @@ class ConsoleSucrier:
 
     premiere_ligne = 0
     temps_rafraichissement_affichage = 10
+    temperature = None
+    date_heure_derniere_temperature = None
+    niveau = None
+    date_heure_dernier_niveau = None
+    alerte = None
+    date_heure_derniere_alerte = None
 
     def __init__(self, log_level=logging.INFO):
         format = "%(asctime)s: %(message)s"
@@ -68,16 +74,22 @@ class ConsoleSucrier:
                 elif msg.topic() == self.topic_alerte:
                     self.lancer_alerte(key=decode_from_bytes(msg.key()), value=decode_from_bytes(msg.value()))
 
-    def afficher_temperature(self, key, value):
+    def afficher_temperature(self, key: str, value: str):
         self.logger.info("{0}: Température: {1} C".format(key, value))
-        self.messages[self.ligne_temp] = "Temp: {temp} C".format(temp=value)
+        self.temperature = value
+        self.date_heure_derniere_temperature = key
+        self.messages[self.ligne_temp] = "Temp: {temp} C".format(temp=self.temperature)
 
-    def afficher_niveau(self, key, value):
+    def afficher_niveau(self, key: str, value: dict(str)):
         self.logger.info("{0}: Niveau: {1} {2}".format(key, value['niveau'], value['message']))
+        self.niveau = value
+        self date_heure_dernier_niveau = key
         self.messages[self.ligne_niveau] = "Niveau: {niveau}".format(type=type,niveau=value['display'])
 
-    def lancer_alerte(self, key, value):
+    def lancer_alerte(self, key: str, value: dict(str)):
         self.logger.warning("{0}: Alerte niveau: {1} {2}".format(key, value['niveau'], value['message']))
+        self.alerte = value
+        self.date_heure_derniere_alerte = key
         self.messages[self.ligne_alerte] = "{display}".format(display=value["display"])
         
     def rafraichir_affichage(self):
