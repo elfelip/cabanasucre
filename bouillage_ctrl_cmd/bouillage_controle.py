@@ -7,11 +7,11 @@ from time import localtime, strftime, sleep
 try:
     import RPi.GPIO as GPIO
 except ImportError:
-    import fake_gpio.RPi.GPIO
+    import Mock.GPIO as GPIO
 import logging
 import threading
 import os
-from inspqcommun.kafka.producteur import obtenirConfigurationsProducteurDepuisVariablesEnvironnement, creerProducteur, publierMessage
+from inspqkafka.producteur import obtenirConfigurationsProducteurDepuisVariablesEnvironnement, creerProducteur, publierMessage
 import argparse
 from statistics import mean, pstdev
 
@@ -457,7 +457,15 @@ class NiveauCtrlCmd:
         str_maintenant = strftime("%Y-%m-%d:%H:%M:%S", localtime())
         return str_maintenant
 
-parser = argparse.ArgumentParser()
+class FakeArgs():
+    loglevel = "info"
+    niveaubas = NiveauCtrlCmd.BAS
+    niveauhaut = NiveauCtrlCmd.HAUT
+    niveaumax = NiveauCtrlCmd.MAX
+    logpath = "/tmp"
+    logfile = "cabaneasucre.log"
+
+parser = argparse.ArgumentParser(prog="bouillage_controle", description="Automatise le processus de bouillage de sirop d'érable")
 parser.add_argument('-log',
                     '--loglevel',
                     default='info',
@@ -479,15 +487,20 @@ parser.add_argument('-m',
                     help="Niveau maximum possible. Example --niveaumax=8, défaut=8")
 parser.add_argument('-p',
                     '--logpath',
-                    default='/var/log',
+                    default='/tmp',
                     type=str,
-                    help='Répertoire du fichier de log. Example --logpath=/tmp, défaut=/var/log')
+                    help='Répertoire du fichier de log. Example --logpath=/var/log, défaut=/tmp')
 parser.add_argument('-f',
                     '--logfile',
                     default='cabanasucre',
                     type=str,
                     help='Nom du fichier de log. Example --logfile=cabane, défaut=cabanasucre')
-args = parser.parse_args()
+try:
+    args = parser.parse_args()
+except:
+    print("Erreur")
+    args = FakeArgs()
+
 
 ctrl_cmd = NiveauCtrlCmd(log_level=args.loglevel.upper(),
                          niveau_bas=args.niveaubas,

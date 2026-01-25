@@ -3,11 +3,14 @@
 
 import signal
 import sys
-import RPi.GPIO as GPIO
+try:
+    import RPi.GPIO as GPIO
+except ImportError:
+    import Mock.GPIO as GPIO
 import logging
 import threading
 import os
-from inspqcommun.kafka.consommateur import obtenirConfigurationsConsommateurDepuisVariablesEnvironnement, decode_from_bytes
+from inspqkafka.consommateur import obtenirConfigurationsConsommateurDepuisVariablesEnvironnement, decode_from_bytes
 from confluent_kafka import OFFSET_END, Consumer
 import drivers
 import argparse
@@ -80,13 +83,13 @@ class ConsoleSucrier:
         self.date_heure_derniere_temperature = key
         self.messages[self.ligne_temp] = "Temp: {temp} C".format(temp=self.temperature)
 
-    def afficher_niveau(self, key: str, value: dict(str)):
+    def afficher_niveau(self, key: str, value: dict[str]):
         self.logger.info("{0}: Niveau: {1} {2}".format(key, value['niveau'], value['message']))
         self.niveau = value
-        self date_heure_dernier_niveau = key
+        self.date_heure_dernier_niveau = key
         self.messages[self.ligne_niveau] = "Niveau: {niveau}".format(type=type,niveau=value['display'])
 
-    def lancer_alerte(self, key: str, value: dict(str)):
+    def lancer_alerte(self, key: str, value: dict[str]):
         self.logger.warning("{0}: Alerte niveau: {1} {2}".format(key, value['niveau'], value['message']))
         self.alerte = value
         self.date_heure_derniere_alerte = key
