@@ -72,7 +72,7 @@ Il y a deux programme inclus dans ce conmposant:
 On exécute ce composant sur le RaspberryPi Zero branché au circuit de CabanaSucre, la sonde de température, la sonde de niveau et la pompe du réservoir. Ce cicruit est relié au RaspberryPi Zero par son port GPIO.
 
 Pré-requis
-    Inataller les outils de développement
+    Installer les outils de développement
         sudo apt install build-essential
         sudo apt install python3-dev
 	Installer les packages suivants pour Kafka

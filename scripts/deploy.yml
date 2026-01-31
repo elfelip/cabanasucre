@@ -1,0 +1,15 @@
+- name: Bouillage
+  hosts: bouillage
+  vars:
+    packages:
+      - build-essential
+      - python3-dev
+      - librdkafka-dev
+  tasks:
+    - name: Installer les packages pré-requis
+      ansible.builtin.apt:
+        name: "{{ package }}"
+        state: present
+      loop: "{{ packages }}"
+      loop_control:
+        loop_var: package

@@ -1,19 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import signal
-import sys
 try:
     import RPi.GPIO as GPIO
 except ImportError:
     import Mock.GPIO as GPIO
 import logging
-import threading
 import os
 from inspqkafka.consommateur import obtenirConfigurationsConsommateurDepuisVariablesEnvironnement, decode_from_bytes
 from confluent_kafka import OFFSET_END, Consumer
 import drivers
-import argparse
 
 from time import sleep
 
@@ -106,26 +102,3 @@ class ConsoleSucrier:
             self.premiere_ligne += 1
             sleep(self.temps_rafraichissement_affichage)
     
-parser = argparse.ArgumentParser()
-parser.add_argument( '-log',
-                    '--loglevel',
-                    default='info',
-                    help='Provide logging level. Example --loglevel debug, default=info' )
-
-args = parser.parse_args()
-sucrier = ConsoleSucrier(log_level=args.loglevel.upper())
-
-def signal_handler(sig, frame):
-        GPIO.cleanup()
-        sucrier.display.lcd_clear()
-        sys.exit(0)
-
-def main():
-    signal.signal(signal.SIGINT, signal_handler)
-    consumer_thread = threading.Thread(target=sucrier.consommer_messages)
-    consumer_thread.start()
-    display_thread = threading.Thread(target=sucrier.rafraichir_affichage)
-    display_thread.start()
-
-if __name__ == "__main__":
-    main()

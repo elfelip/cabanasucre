@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from bouillage_ctrl_cmd.bouillage_controle import NiveauCtrlCmd
+from bouillage import NiveauCtrlCmd
 import unittest
 from unittest import TestCase, mock
+import Mock.GPIO as GPIO
 #import os
 
 class TestNiveauCtrlCmd(TestCase):
@@ -37,9 +38,12 @@ class TestNiveauCtrlCmd(TestCase):
         if args[0] == 5 or args[0] == 17 or args[0] == 27:
             return True
         return False
-
+    
     def gpio_input_max_mock(*args, **kwargs):
         return True
+
+    def gpio_output(*args, **kwargs):
+        print(args[1])
 
     def ouvrir_valve_mock(*args, **kwargs):
         valve = "ouverte"
@@ -54,19 +58,20 @@ class TestNiveauCtrlCmd(TestCase):
         pass
 
     # Tests Sonde NIN_MIN
-    @mock.patch('RPi.GPIO.setmode', side_effect=gpio_setmode_mock)
-    @mock.patch('GPIO.setup', side_effect=gpio_setup_mock)
-    @mock.patch('RPi.GPIO.add_event_detect', side_effect=gpio_add_event_detect_mock)
-    @mock.patch('RPi.GPIO.input', side_effect=gpio_input_bas_mock)
-    @mock.patch('bouillage_ctrl_cmd.bouillage_controle.NiveauCtrlCmd.ouvrir_valve', side_effect=ouvrir_valve_mock)
-    @mock.patch('bouillage_ctrl_cmd.bouillage_controle.NiveauCtrlCmd.fermer_valve', side_effect=fermer_valve_mock)
+    @mock.patch('Mock.GPIO.setmode', side_effect=gpio_setmode_mock)
+    @mock.patch('Mock.GPIO.setup', side_effect=gpio_setup_mock)
+    @mock.patch('Mock.GPIO.add_event_detect', side_effect=gpio_add_event_detect_mock)
+    @mock.patch('Mock.GPIO.input', side_effect=gpio_input_bas_mock)
+    @mock.patch('Mock.GPIO.output', side_effect=gpio_output)
+    # @mock.patch('bouillage_ctrl_cmd.bouillage_controle.NiveauCtrlCmd.ouvrir_valve', side_effect=ouvrir_valve_mock)
+    # @mock.patch('bouillage_ctrl_cmd.bouillage_controle.NiveauCtrlCmd.fermer_valve', side_effect=fermer_valve_mock)
     def test_etant_donne_niveau_min_si_la_sonde_de_niveau_min_est_touchee_par_l_eau_alors_le_niveau_est_bas(
         self,
         *mocks):
 
-        controle_niveau = NiveauCtrlCmd()
-        controle_niveau.NIVEAU = controle_niveau.MIN
-        controle_niveau.traiter_event_detect_pour_sonde_niveau(controle_niveau.NIV_MIN_R)
+        controle_niveau = NiveauCtrlCmd(log_path=".", modprobe=False)
+        controle_niveau.NIVEAU = controle_niveau.VIDE
+        controle_niveau.traiter_event_detect_pour_sonde_niveau(channel=NiveauCtrlCmd.BROCHE_NIV_2)
         self.assertEqual(
             controle_niveau.NIVEAU,
             controle_niveau.BAS,
