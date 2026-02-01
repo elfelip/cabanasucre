@@ -1,0 +1,14 @@
+[Unit]
+Description={{ cabanasucre_service }}
+After=syslog.target network.target
+
+[Service]
+Type=simple
+User=nobody
+WorkingDirectory={{ cabanasucre_venv }}
+ExecStart={{ cabanasucre_venv }}/bin/{{ cabanasucre_service }}
+Restart=always
+Environment="BOOTSTRAP_SERVER={{ cabanasucre_bootstrap_server | default('localhost:9092') }}"
+
+[Install]
+WantedBy=multi-user.target
