@@ -4,11 +4,13 @@ After=syslog.target network.target
 
 [Service]
 Type=simple
-User=nobody
-WorkingDirectory={{ cabanasucre_venv }}
-ExecStart={{ cabanasucre_venv }}/bin/{{ cabanasucre_service }}
+User={{ cabanasucre_user | default('nobody') }}
+WorkingDirectory={{ cabanasucre_home | default('/tmp') }}
+ExecStart=python3 {{ cabanasucre_venv }}/lib/python3.13/site-packages/{{ cabanasucre_service }}/main.py {{ cabanasucre_args }}
 Restart=always
-Environment="BOOTSTRAP_SERVER={{ cabanasucre_bootstrap_server | default('localhost:9092') }}"
+Environment="VIRTUAL_ENV={{ cabanasucre_venv }}"
+Environment="PATH={{ cabanasucre_venv }}/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/games:/usr/games"
+Environment="BOOTSTRAP_SERVERS={{ cabanasucre_bootstrap_server | default('localhost:9092') }}"
 
 [Install]
 WantedBy=multi-user.target

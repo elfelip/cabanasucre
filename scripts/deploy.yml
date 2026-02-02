@@ -4,6 +4,9 @@
     cabanasucre_service: bouillage
     cabanasucre_venv: /opt/cabanasucre_venv
     cabanasucre_version: 0.1.3
+    cabanasucre_user: pi
+    cabanasucre_group: pi
+    cabanasucre_home: /home/{{ cabanasucre_user }}
     packages:
       - build-essential
       - libssl-dev
@@ -12,6 +15,13 @@
       - python3-pip
       - python3-venv
       - librdkafka-dev
+    cabanasucre_args: "--loglevel {{ cabanasucre_loglevel | default('info') }} \
+                      --logpath {{ cabanasucre_logpath | default('/var/log') }} \
+                      --logfile {{ cabanasucre_logfile | default('cabanasucre') }} \
+                      --niveaubas {{ cabanasucre_niveau_bas | default(2) | string }} \
+                      --niveauhaut {{ cabanasucre_niveau_haut | default(4) | string }} \
+                      --niveaumax {{ cabanasucre_niveau_max | default(8) | string }}"
+
   tasks:
     - name: Ensure w1-gpio overlay is present in /boot/config.txt
       ansible.builtin.lineinfile:
@@ -58,7 +68,7 @@
         state: present
 
     - name: Créer le fichier de service systemd
-      template:
+      ansible.builtin.template:
         src: templates/service.j2
         dest: /etc/systemd/system/{{ cabanasucre_service }}.service
         owner: root
@@ -66,8 +76,27 @@
         mode: '0644'
       notify: reboot
 
+    - name: Créer le group
+      ansible.builtin.group:
+        name: "{{ cabanasucre_group }}"
+
+    - name: Créer le user
+      ansible.builtin.user:
+        name: "{{ cabanasucre_user }}"
+        group: "{{ cabanasucre_group }}"
+        home: "{{ cabanasucre_home }}"
+        shell: "/bin/bash"
+
+    - name: Créer le fichier de log
+      ansible.builtin.file:
+        path: "{{ cabanasucre_logpath | default('/var/log') }}/{{ cabanasucre_logfile | default('cabanasucre') }}.log"
+        owner: "{{ cabanasucre_user }}"
+        group: "{{ cabanasucre_group }}"
+        mode: '0644'
+        state: touch
+
     - name: Activer et démarrer le service
-      systemd:
+      ansible.builtin.systemd:
         name: "{{ cabanasucre_service }}.service"
         enabled: yes
         state: started
