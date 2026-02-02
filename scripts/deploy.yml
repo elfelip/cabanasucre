@@ -23,9 +23,9 @@
                       --niveaumax {{ cabanasucre_niveau_max | default(8) | string }}"
 
   tasks:
-    - name: Ensure w1-gpio overlay is present in /boot/config.txt
+    - name: Ensure w1-gpio overlay is present in /boot/firmware/config.txt
       ansible.builtin.lineinfile:
-        path: /boot/config.txt
+        path: /boot/firmware/config.txt
         line: dtoverlay=w1-gpio
         state: present
       notify: reboot
@@ -113,7 +113,7 @@
   vars:
     cabanasucre_service: console_sucrier
     cabanasucre_venv: /opt/cabanasucre_venv
-    cabanasucre_version: 0.1.3
+    cabanasucre_version: 0.1.5
     cabanasucre_user: pi
     cabanasucre_group: pi
     cabanasucre_home: /home/{{ cabanasucre_user }}
@@ -124,12 +124,13 @@
       - python3-dev
       - python3-pip
       - python3-venv
+      - python3-smbus
       - librdkafka-dev
     cabanasucre_args: "--loglevel {{ cabanasucre_loglevel | default('info') }}"
   tasks:
-    - name: Ensure i2c_arm is present in /boot/config.txt
+    - name: Ensure i2c_arm is present in /boot/firmware/config.txt
       ansible.builtin.lineinfile:
-        path: /boot/config.txt
+        path: /boot/firmware/config.txt
         line: dtparam=i2c_arm=on
         state: present
       notify: reboot

@@ -251,3 +251,12 @@ Pour pouvoir tester le code sur une autre plateforme que le Raspberry Pi, on doi
     fake_smbus:
         cd fake_smbus
         python3 -m pip install -U .
+
+# Préparation des Rapsberry Pi
+
+Pour exécuter les modules de la cabanasucre, les Raspberry Pi doivent être préparés:
+
+    1. Rapsberry OS trixie doit être déployé dessus
+    2. Le réseau sans fil doit être activé et connecteé sur votre réseau Wifi.
+    3. L'utilisateur pi doit être créé avec un mot de passe que vous connaissez.
+    4. Faire les mises à jour (sudo apt update && sudo apt upgrade)
