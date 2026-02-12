@@ -1,21 +1,17 @@
 [tool.poetry]
-name = "bouillage"
-version = "0.2.0"
-description = "Module de contrôle pour le bouillage de sirop d'érable"
+name = "cabanasucre-commun"
+version = "0.1.0"
+description = "Module commun pour les composants de cabanasucre"
 authors = ["elfelip <elfelip@yahoo.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.12"
 mock-gpio = "^0.2.0"
-inspqkafka = "^0.9.1"
 rpi-lgpio = "^0.6"
-cabanasucre-commun = "^0.1.0"
+smbus = "^1.1.post2"
 
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
-
-[tool.poetry.scripts]
-bouillage = "bouillage.main:main"

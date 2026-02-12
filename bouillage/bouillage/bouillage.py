@@ -23,6 +23,16 @@ class NiveauCtrlCmd:
     BROCHE_NIV_8 = 17 # 11
     BROCHE_POMPE = 26 # 37
     BROCHE_TONNE = 16 # 36
+
+    BROCHE_LED_NIV_VIDE = 10 # 19
+    BROCHE_LED_NIV_MIN = 9 # 21
+    BROCHE_LED_NIV_NORMAL = 11 # 23
+    BROCHE_LED_NIV_HAUT = 6 # 31
+    BROCHE_LED_NIV_MAX = 13 # 33
+
+    BROCHE_LED_TONNE_VIDE = 7 # 26
+    BROCHE_LED_POMPE_ON = 8 # 24
+
     ERREUR = -1
     VIDE = 0
     BAS = 1
@@ -197,6 +207,48 @@ class NiveauCtrlCmd:
                 "nom": "POMPE",
                 "mode": GPIO.OUT,
                 "initial": GPIO.LOW
+            },
+            {
+                "numero": self.BROCHE_LED_NIV_VIDE,
+                "nom": "LED_NIV_VIDE",
+                "mode": GPIO.OUT,
+                "initial": GPIO.LOW
+            },
+            {
+                "numero": self.BROCHE_LED_NIV_MIN,
+                "nom": "LED_NIV_MIN",
+                "mode": GPIO.OUT,
+                "initial": GPIO.LOW
+            },
+            {
+                "numero": self.BROCHE_LED_NIV_NORMAL,
+                "nom": "LED_NIV_NORMAL",
+                "mode": GPIO.OUT,
+                "initial": GPIO.LOW
+            },
+            {
+                "numero": self.BROCHE_LED_NIV_HAUT,
+                "nom": "LED_NIV_HAUT",
+                "mode": GPIO.OUT,
+                "initial": GPIO.LOW
+            },
+            {
+                "numero": self.BROCHE_LED_NIV_MAX,
+                "nom": "LED_NIV_MAX",
+                "mode": GPIO.OUT,
+                "initial": GPIO.LOW
+            },
+            {
+                "numero": self.BROCHE_LED_POMPE_ON,
+                "nom": "LED_POMPE_ON",
+                "mode": GPIO.OUT,
+                "initial": GPIO.LOW
+            },
+            {
+                "numero": self.BROCHE_LED_TONNE_VIDE,
+                "nom": "LED_TONNE_VIDE",
+                "mode": GPIO.OUT,
+                "initial": GPIO.LOW
             }
         ]
         self.logger.info("setmode: {0}".format(self.MODE))
@@ -257,7 +309,38 @@ class NiveauCtrlCmd:
             self.logger.warning("Niveau: {niveau} {message}".format(niveau=self.info_niveaux[niveau]["display"], message=self.info_niveaux[niveau]["message"]))
         else:
             self.logger.info("Niveau: {niveau} {message}".format(niveau=self.info_niveaux[niveau]["display"], message=self.info_niveaux[niveau]["message"]))
-            
+
+        if niveau == self.VIDE:
+            GPIO.output(self.BROCHE_LED_NIV_VIDE, GPIO.HIGH)
+            GPIO.output(self.BROCHE_LED_NIV_MIN, GPIO.LOW)
+            GPIO.output(self.BROCHE_LED_NIV_NORMAL, GPIO.LOW)
+            GPIO.output(self.BROCHE_LED_NIV_HAUT, GPIO.LOW)
+            GPIO.output(self.BROCHE_LED_NIV_MAX, GPIO.LOW)
+        elif niveau > self.VIDE and niveau <= self.BAS:
+            GPIO.output(self.BROCHE_LED_NIV_VIDE, GPIO.LOW)
+            GPIO.output(self.BROCHE_LED_NIV_MIN, GPIO.HIGH)
+            GPIO.output(self.BROCHE_LED_NIV_NORMAL, GPIO.LOW)
+            GPIO.output(self.BROCHE_LED_NIV_HAUT, GPIO.LOW)
+            GPIO.output(self.BROCHE_LED_NIV_MAX, GPIO.LOW)
+        elif niveau > self.BAS and niveau < self.HAUT:
+            GPIO.output(self.BROCHE_LED_NIV_VIDE, GPIO.LOW)
+            GPIO.output(self.BROCHE_LED_NIV_MIN, GPIO.LOW)
+            GPIO.output(self.BROCHE_LED_NIV_NORMAL, GPIO.HIGH)
+            GPIO.output(self.BROCHE_LED_NIV_HAUT, GPIO.LOW)
+            GPIO.output(self.BROCHE_LED_NIV_MAX, GPIO.LOW)
+        elif niveau >= self.HAUT and niveau < self.MAX:
+            GPIO.output(self.BROCHE_LED_NIV_VIDE, GPIO.LOW)
+            GPIO.output(self.BROCHE_LED_NIV_MIN, GPIO.LOW)
+            GPIO.output(self.BROCHE_LED_NIV_NORMAL, GPIO.LOW)
+            GPIO.output(self.BROCHE_LED_NIV_HAUT, GPIO.HIGH)
+            GPIO.output(self.BROCHE_LED_NIV_MAX, GPIO.LOW)
+        else:
+            GPIO.output(self.BROCHE_LED_NIV_VIDE, GPIO.LOW)
+            GPIO.output(self.BROCHE_LED_NIV_MIN, GPIO.LOW)
+            GPIO.output(self.BROCHE_LED_NIV_NORMAL, GPIO.LOW)
+            GPIO.output(self.BROCHE_LED_NIV_HAUT, GPIO.LOW)
+            GPIO.output(self.BROCHE_LED_NIV_MAX, GPIO.HIGH)
+
 
     def publier_niveau(self, niveau=None):
         if niveau is None:
@@ -279,6 +362,7 @@ class NiveauCtrlCmd:
             if not self.pompe_en_action:
                 self.logger.info("Démarrer la pompe pour ajouter de l'eau.")
                 GPIO.output(self.BROCHE_POMPE, GPIO.HIGH)
+                GPIO.output(self.BROCHE_LED_POMPE_ON, GPIO.HIGH)
                 self.pompe_en_action = True
                 self.publier_alerte(contenu_message=self.message_alerte_demarrage_pompe)
         else:
@@ -288,6 +372,7 @@ class NiveauCtrlCmd:
         if self.pompe_en_action:
             self.logger.info("Arrêter la pompe.")
             GPIO.output(self.BROCHE_POMPE, GPIO.LOW)
+            GPIO.output(self.BROCHE_LED_POMPE_ON, GPIO.LOW)
             self.pompe_en_action = False
             self.publier_alerte(contenu_message=self.message_alerte_arret_pompe)
             
