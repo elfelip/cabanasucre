@@ -75,6 +75,17 @@
       loop_control:
         loop_var: package
 
+    - name: Créer le group
+      ansible.builtin.group:
+        name: "{{ cabanasucre_group }}"
+
+    - name: Créer le user
+      ansible.builtin.user:
+        name: "{{ cabanasucre_user }}"
+        group: "{{ cabanasucre_group }}"
+        home: "{{ cabanasucre_home }}"
+        shell: "/bin/bash"
+
     - name: Create Python virtual environment
       ansible.builtin.command:
         cmd: python3 -m venv {{ cabanasucre_venv }}
@@ -86,6 +97,7 @@
         version: "{{ cabanasucre_version }}"
         virtualenv: "{{ cabanasucre_venv }}"
         state: present
+      notify: reboot
 
     - name: Créer le fichier de service systemd
       ansible.builtin.template:
@@ -95,17 +107,6 @@
         group: root
         mode: '0644'
       notify: reboot
-
-    - name: Créer le group
-      ansible.builtin.group:
-        name: "{{ cabanasucre_group }}"
-
-    - name: Créer le user
-      ansible.builtin.user:
-        name: "{{ cabanasucre_user }}"
-        group: "{{ cabanasucre_group }}"
-        home: "{{ cabanasucre_home }}"
-        shell: "/bin/bash"
 
     - name: Créer le fichier de log
       ansible.builtin.file:
@@ -120,8 +121,7 @@
         name: "{{ cabanasucre_service }}.service"
         enabled: yes
         state: started
-        daemon_reload: yes  # Important si le fichier a changé
-      register: service_status
+      notify: reboot
 
   handlers:
     - name: reboot
@@ -175,6 +175,17 @@
       loop_control:
         loop_var: package
 
+    - name: Créer le group
+      ansible.builtin.group:
+        name: "{{ cabanasucre_group }}"
+
+    - name: Créer le user
+      ansible.builtin.user:
+        name: "{{ cabanasucre_user }}"
+        group: "{{ cabanasucre_group }}"
+        home: "{{ cabanasucre_home }}"
+        shell: "/bin/bash"
+
     - name: Create Python virtual environment
       ansible.builtin.command:
         cmd: python3 -m venv {{ cabanasucre_venv }}
@@ -186,6 +197,7 @@
         version: "{{ cabanasucre_version }}"
         virtualenv: "{{ cabanasucre_venv }}"
         state: present
+      notify: reboot
 
     - name: Créer le fichier de service systemd
       ansible.builtin.template:
@@ -195,17 +207,6 @@
         group: root
         mode: '0644'
       notify: reboot
-
-    - name: Créer le group
-      ansible.builtin.group:
-        name: "{{ cabanasucre_group }}"
-
-    - name: Créer le user
-      ansible.builtin.user:
-        name: "{{ cabanasucre_user }}"
-        group: "{{ cabanasucre_group }}"
-        home: "{{ cabanasucre_home }}"
-        shell: "/bin/bash"
 
     - name: Créer le fichier de log
       ansible.builtin.file:
@@ -220,8 +221,7 @@
         name: "{{ cabanasucre_service }}.service"
         enabled: yes
         state: started
-        daemon_reload: yes  # Important si le fichier a changé
-      register: service_status
+      notify: reboot
 
   handlers:
     - name: reboot
