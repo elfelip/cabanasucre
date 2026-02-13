@@ -53,7 +53,7 @@ Pour créer le cluster kafkabanasucre, suivre les étapes suivantes:
 
 Le projet peut fonctionner avec un cluster Kafka à un noeud sur Docker. Je vais éventuellement ajouter un fichier docker-compose mais il y a plein d'exemple dans la documentation de Kafka.
 
-## bouillage_ctrl_cmd
+## bouillage
 
 Ce composant sert à mesurer la température du bouillage ainsi qu'à contrôler le niveau d'eau d'érable dans le chaudron.
 Le contrôle de niveau d'eau se fait grâce à une sonde trempée dans l'évaporateur ainsi qu'une pompe et des tuyaux reliants le réservoir d'eau d'érable et le chaudron.
@@ -62,50 +62,20 @@ Si le niveau d'eau tombe sous la sonde de niveau minimum ou par dessus la sonde 
 
 Les mesures de niveau, de température ainsi que les alertes sont publiés sur le cluster Kafka afin d'être transmises au sucrier.
 
-Il y a deux programme inclus dans ce conmposant:
-
-    bouillage_controle.py: Controleur de bouillage principal
-    console_sucrier.py: Console permettant d'accéder aux informations publiées par le controleur
-
 ### Controleur bouillage
 
 On exécute ce composant sur le RaspberryPi Zero branché au circuit de CabanaSucre, la sonde de température, la sonde de niveau et la pompe du réservoir. Ce cicruit est relié au RaspberryPi Zero par son port GPIO.
 
 Pré-requis
-    Installer les outils de développement
-        sudo apt install build-essential
-        sudo apt install python3-dev
-	Installer les packages suivants pour Kafka
-	    sudo apt-get install librdkafka-dev
-    Cloner le projet cabanasucre
-        git clone https://github.com/elfelip/cabanasucre.git
-	Installer les requirements.txt
-        cd cabanasucre
-	    python3 -m pip install -r requirements.txt
-
-Définir la variable d'environnement pour la connexion a cluster Kafka en ajoutant la ligne suivante dans le fichier /home/pi/.bashrc:
-
-    export BOOTSTRAP_SERVERS=kube06.lacave.info:31092,kube07.lacave.info:31093,kube08.lacave.info:31094
-
-Pour automatiser le démarrage du programme sur le Rasbperry Pi Zéro, ajouter la ligne suivante dans le fichier /home/pi/.bashrc
-
-    /home/pi/cabanasucre/start_cabanasucre.sh
-
-Lancer l'interface de confiration raspi_config pour qu'une session pour l'utilisateur pi s'ouvre automatiquement au démarrage.
-
-    sudo raspi-config
-    Sélectionner 1 System Options -> S5 Boot / Auto login
-    Sélectionner B2 Console Autologin Text console, automatically logged in as 'pi' user
-
-Activer w1-temp toujours avec raspi-config:
-
-    sudo raspi-config
-    Sélectionner 3 Interface Options -> I7 1-Wire
+    Raspberry Pi Zero
+    Raspberry Pi OS Trixie
+    Réseau Wifi
+    Entré DNS ou fichier hosts avec le nom rpi0wifi correspondant à l'adresse IP du Raspberry Pi
 
 
 ### Sonde de niveau
 
-La sonde de niveau est constitué de 9 fils d'acier incoxydable recouvert de plastique. Ces fils sont dévouverts de leur gaine à leur base sur à peu près 3 mm pour permettre le contact électrique. Le premier fil se rend presque au fond du chaudron. Le deuxième fil est placé à un pouce du fond, le troisième à 2 pouces du fond ainsi de suite jusqu'au niveau maximum de 8 pouces.
+La sonde de niveau est constitué de 9 fils d'acier inoxydable recouvert de plastique. Ces fils sont découverts de leur gaine à leur base sur à peu près 3 mm pour permettre le contact électrique. Le premier fil se rend presque au fond du chaudron. Le deuxième fil est placé à un pouce du fond, le troisième à 2 pouces du fond ainsi de suite jusqu'au niveau maximum de 8 pouces.
 
 ### Sonde de température.
 
@@ -116,34 +86,13 @@ La sone de température est un sonde DS8. Elle est relié au Raspberry py 0 par 
 Sur le Rasberry Pi3 on installe un affichage a cristaux liquide permettant de diffuser les différents messages emis pas le controleur.
 
 Pré-requis
-	Installer les packages suivants pour Kafka
-	    sudo apt-get install librdkafka-dev
-    Cloner le projet cabanasucre
-        git clone https://github.com/elfelip/cabanasucre.git
-	Installer les requirements.txt
-        cd cabanasucre
-	    python3 -m pip install -r requirements.txt
-
-
-Pour configurer la connexion au cluster Kafka, définir la variable d'environnement BOOTSTRAP_SERVERS en ajoutant la ligne suivante dans le fichier /home/pi/.bashrc:
-
-    export BOOTSTRAP_SERVERS=kube06.lacave.info:31092,kube07.lacave.info:31093,kube08.lacave.info:31094
-
-Pour automatiser le démarrage du programme de console sur le Rasbperry Pi 3, ajouter la ligne suivante dans le fichier /home/pi/.bashrc
-
-    /home/pi/cabanasucre/start_console.sh
-
-Lancer l'interface de confiration raspi_config pour qu'une session pour l'utilisateur pi s'ouvre automatiquement au démarrage.
-
-    sudo raspi-config
-    Sélectionner 1 System Options -> S5 Boot / Auto login
-    Sélectionner B2 Console Autologin Text console, automatically logged in as 'pi' user
-    Sélectionner 3 Interface Options
-    Sélectionner I5 I2C Enable/Disable automatic loading of I2C kernel module. Répondre Yes
-    Finish
-    Reboot now Yes
+    Raspberry Pi 3
+    Raspberry Pi OS Trixie
+    Réseau Wifi
+    Entré DNS ou fichier hosts avec le nom rpi0wifi correspondant à l'adresse IP du Raspberry Pi
 
 # Équipement nécessaires
+
 Voici la liste des éléments nécessaires pour ce projet avec des références Amazon:
 
     Unité de calcules:
@@ -178,7 +127,7 @@ Total des côuts: Environ 675$.
 
 Il faut idéalement un abri pour éviter d'endomager le système lors du bouillage à l'extérieur. Un jeux extérieur d'enfant converti en cabane est l'idéal.
 
-# Cricuits
+# Circuits
 
 Voici les connexions à faire entre les différents éléments des cricuits et les broches des Raspberry PI. Le numéro de broche est utilisé et non l'identifiant GPIO dans les tableaux.
 
@@ -244,19 +193,45 @@ Un écran LCD est connecté sur le Rasbperry PI 3 qui sert de console du surveil
 # Développement
 
 Pour pouvoir tester le code sur une autre plateforme que le Raspberry Pi, on doit installer les deux modules bidon suivants:
-
-    fake_gpio:
-        cd fake_gpio
-        python3 -m pip install -U .
     fake_smbus:
         cd fake_smbus
         python3 -m pip install -U .
+
+# Construction des composants
+
+Les composants sont des projets Poetry. Les modules sont publiés sur PyPI.
+
+Pour faire la construction des modules, exécuter le script suivant:
+
+    scripts/build.sh
 
 # Préparation des Rapsberry Pi
 
 Pour exécuter les modules de la cabanasucre, les Raspberry Pi doivent être préparés:
 
-    1. Rapsberry OS trixie doit être déployé dessus
+    1. Rapsberry OS trixie doit être déployé
     2. Le réseau sans fil doit être activé et connecteé sur votre réseau Wifi.
     3. L'utilisateur pi doit être créé avec un mot de passe que vous connaissez.
     4. Faire les mises à jour (sudo apt update && sudo apt upgrade)
+    5. Activer le service SSH
+
+# Déploiement des composants sur les Raspberry Pi
+
+On utilise Ansible pour configurer les Raspberry Pi et déployer les composants.
+
+Pré-requis:
+    Ansible 2.16 ou plus
+    Pouvoir se connecter sur les Rapsberry Pi par SSH sans mot de passe (ssh-copy-id)
+
+La première étape est de créer l'inventaire Ansible.
+Le répertoire inventory de ce projet est utilisé pour déployer chez moi. Vous pouvez vous inspirer ce cet inventaire pour faire le votre.
+
+Ex. cp -r inventory chemin_vers_mon_inventaire
+
+Le fichier hosts contient les informations pour la connexion vers les Rapsberry Pi. Vous pouvez changer les host pour refléter votre environnement.
+Le fichier inventory/group_vars/all.yml contient les valeurs pour la configuraton Kafka.
+La variable cabanasucre_bootstrap_server doit contenir les informations de connexion vers votre cluster Kafka.
+
+Pour lancer la configuration et le déploiement, lancer la commande suivante:
+
+    ansible-playbook -i chemin_vers_mon_inventaire/hosts scripts/deploy.yml

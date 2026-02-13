@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "console-sucrier"
-version = "0.1.5"
+version = "0.2.0"
 description = "Module console permettant de suivre le bouillage de sirop d'érable"
 authors = ["elfelip <elfelip@yahoo.com>"]
 readme = "README.md"
@@ -11,6 +11,7 @@ inspqkafka = "^0.9.1"
 mock-gpio = "^0.2.0"
 rpi-lgpio = "^0.6"
 smbus = "^1.1.post2"
+cabanasucre-commun = "^0.1.0"
 
 
 [build-system]

@@ -11,6 +11,7 @@ import os
 from inspqkafka.producteur import obtenirConfigurationsProducteurDepuisVariablesEnvironnement, creerProducteur, publierMessage
 
 from statistics import mean, pstdev
+from cabanasucre_commun.lcd_i2c import Lcd
 
 class NiveauCtrlCmd:
     BROCHE_NIV_1 = 12 # 32
@@ -287,6 +288,7 @@ class NiveauCtrlCmd:
                 initial = connecteur["initial"] if "initial" in connecteur else GPIO.LOW
                 GPIO.setup(connecteur["numero"], connecteur["mode"], initial=initial)
 
+        self.display = Lcd()
         self.arreter_pompe()
         self.verifier_niveau_tonne()
         self.NIVEAU = self.mesurer_niveau()
@@ -452,11 +454,13 @@ class NiveauCtrlCmd:
         if sonde_niveau_tonne:
             self.logger.debug("Il y a de l'eau dans la tonne")
             self.pompe_enabled = True
+            GPIO.output(self.BROCHE_LED_TONNE_VIDE, GPIO.LOW)
             self.mesurer_niveau()
             if self.NIVEAU < self.BAS:
                 self.demarrer_pompe()
         else:
             self.logger.warning("Il n'y a plus d'eau dans la tonne.")
+            GPIO.output(self.BROCHE_LED_TONNE_VIDE, GPIO.HIGH)
             if self.pompe_en_action:
                 self.arreter_pompe()
             self.pompe_enabled = False
@@ -505,6 +509,7 @@ class NiveauCtrlCmd:
                 alerte = self.message_alerte_temperature_de_base_etablie.copy()
                 alerte['display'] = "{msg}: {temp} C".format(msg=alerte["display"], temp=self.temperature_base)
                 self.publier_alerte(contenu_message=alerte)
+                self.afficher_temperature_sirop(temperature=self.temperature_base + self.ecart_pour_fin_bouillage)
 
     def lire_temperature(self):
         while True:
@@ -532,6 +537,7 @@ class NiveauCtrlCmd:
             if len(lines) > 0:
                 temperature = int(lines[0])/1000
                 self.logger.info("La temperature est: {0}".format(temperature))
+                self.afficher_temperature(temperature=temperature)
                 self.traiter_temperature(value=temperature)
                 if self.producteur is not None:
                     message = {}
@@ -542,7 +548,16 @@ class NiveauCtrlCmd:
             else:
                 print("La sonde n'a pas retourné de température")
             sleep(60)
-            
+
+    def afficher_temperature(self, temperature: float) -> None:
+        affichage = f'TEMP: {str(temperature)}'
+        self.display.lcd_display_string(affichage.ljust(16), 1)
+    
+    def afficher_temperature_sirop(self, temperature: float) -> None:
+        affichage = f'SIROP: {str(temperature)}'
+        self.display.lcd_display_string(affichage.ljust(16), 2)
+
+
     def maintenant(self):
         str_maintenant = strftime("%Y-%m-%d:%H:%M:%S", localtime())
         return str_maintenant

@@ -9,7 +9,7 @@ import logging
 import os
 from inspqkafka.consommateur import obtenirConfigurationsConsommateurDepuisVariablesEnvironnement, decode_from_bytes
 from confluent_kafka import OFFSET_END, Consumer
-import drivers
+from cabanasucre_commun.lcd_i2c import Lcd
 
 from time import sleep
 
@@ -51,7 +51,7 @@ class ConsoleSucrier:
             liste_topics = [self.topic_alerte, self.topic_niveau, self.topic_temp]
             self.consommateur = Consumer(self.kafka_config.kafka)
             self.consommateur.subscribe(liste_topics, on_assign=self.reset_offset)
-        self.display = drivers.Lcd()
+        self.display = Lcd()
 
     def reset_offset(self, consumer, partitions):
         for p in partitions:

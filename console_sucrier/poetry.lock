@@ -16,6 +16,22 @@ docs = ["furo", "jaraco.packaging (>=9.3)", "rst.linker (>=1.9)", "sphinx (>=3.5
 testing = ["jaraco.test", "pytest (!=8.0.*)", "pytest (>=6,!=8.1.*)", "pytest-checkdocs (>=2.4)", "pytest-cov", "pytest-enabler (>=2.2)"]
 
 [[package]]
+name = "cabanasucre-commun"
+version = "0.1.0"
+description = "Module commun pour les composants de cabanasucre"
+optional = false
+python-versions = "<4.0,>=3.12"
+files = [
+    {file = "cabanasucre_commun-0.1.0-py3-none-any.whl", hash = "sha256:97b981e18f7a23a0a88fbc80532a99ac62c6355e9a4b2e8f7c96d3e8a76e3226"},
+    {file = "cabanasucre_commun-0.1.0.tar.gz", hash = "sha256:5889ed9b09025e7ea099e9935907f8d90229b7196e5744d0c7ffd2ec66e6654b"},
+]
+
+[package.dependencies]
+mock-gpio = ">=0.2.0,<0.3.0"
+rpi-lgpio = ">=0.6,<0.7"
+smbus = ">=1.1.post2,<2.0"
+
+[[package]]
 name = "certifi"
 version = "2024.8.30"
 description = "Python package for providing Mozilla's CA Bundle."
@@ -984,4 +1000,4 @@ type = ["pytest-mypy"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "b81f43d7583546fd5dda065540805b7ed5ed4c08224b7dff47aca8900717add4"
+content-hash = "0ad55a826243755281e8d5dd2c33b4a959e4beb13c9618ac7cd3de746aa84ebc"
