@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "console-sucrier"
-version = "0.2.0"
+version = "0.3.3"
 description = "Module console permettant de suivre le bouillage de sirop d'érable"
 authors = ["elfelip <elfelip@yahoo.com>"]
 readme = "README.md"

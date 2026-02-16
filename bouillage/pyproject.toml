@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "bouillage"
-version = "0.3.2"
+version = "0.3.3"
 description = "Module de contrôle pour le bouillage de sirop d'érable"
 authors = ["elfelip <elfelip@yahoo.com>"]
 readme = "README.md"

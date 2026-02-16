@@ -26,7 +26,7 @@ class NiveauCtrlCmd:
     BROCHE_TONNE = 16 # 36
 
     BROCHE_LED_NIV_VIDE = 13 # 33
-    BROCHE_LED_NIV_MIN = 6 # 31
+    BROCHE_LED_NIV_BAS = 6 # 31
     BROCHE_LED_NIV_NORMAL = 11 # 23
     BROCHE_LED_NIV_HAUT = 9 # 21
     BROCHE_LED_NIV_MAX = 10 # 10
@@ -216,7 +216,7 @@ class NiveauCtrlCmd:
                 "initial": GPIO.LOW
             },
             {
-                "numero": self.BROCHE_LED_NIV_MIN,
+                "numero": self.BROCHE_LED_NIV_BAS,
                 "nom": "LED_NIV_MIN",
                 "mode": GPIO.OUT,
                 "initial": GPIO.LOW
@@ -314,31 +314,31 @@ class NiveauCtrlCmd:
 
         if niveau == self.VIDE:
             GPIO.output(self.BROCHE_LED_NIV_VIDE, GPIO.HIGH)
-            GPIO.output(self.BROCHE_LED_NIV_MIN, GPIO.LOW)
+            GPIO.output(self.BROCHE_LED_NIV_BAS, GPIO.LOW)
             GPIO.output(self.BROCHE_LED_NIV_NORMAL, GPIO.LOW)
             GPIO.output(self.BROCHE_LED_NIV_HAUT, GPIO.LOW)
             GPIO.output(self.BROCHE_LED_NIV_MAX, GPIO.LOW)
         elif niveau > self.VIDE and niveau <= self.BAS:
             GPIO.output(self.BROCHE_LED_NIV_VIDE, GPIO.LOW)
-            GPIO.output(self.BROCHE_LED_NIV_MIN, GPIO.HIGH)
+            GPIO.output(self.BROCHE_LED_NIV_BAS, GPIO.HIGH)
             GPIO.output(self.BROCHE_LED_NIV_NORMAL, GPIO.LOW)
             GPIO.output(self.BROCHE_LED_NIV_HAUT, GPIO.LOW)
             GPIO.output(self.BROCHE_LED_NIV_MAX, GPIO.LOW)
         elif niveau > self.BAS and niveau < self.HAUT:
             GPIO.output(self.BROCHE_LED_NIV_VIDE, GPIO.LOW)
-            GPIO.output(self.BROCHE_LED_NIV_MIN, GPIO.LOW)
+            GPIO.output(self.BROCHE_LED_NIV_BAS, GPIO.LOW)
             GPIO.output(self.BROCHE_LED_NIV_NORMAL, GPIO.HIGH)
             GPIO.output(self.BROCHE_LED_NIV_HAUT, GPIO.LOW)
             GPIO.output(self.BROCHE_LED_NIV_MAX, GPIO.LOW)
         elif niveau >= self.HAUT and niveau < self.MAX:
             GPIO.output(self.BROCHE_LED_NIV_VIDE, GPIO.LOW)
-            GPIO.output(self.BROCHE_LED_NIV_MIN, GPIO.LOW)
+            GPIO.output(self.BROCHE_LED_NIV_BAS, GPIO.LOW)
             GPIO.output(self.BROCHE_LED_NIV_NORMAL, GPIO.LOW)
             GPIO.output(self.BROCHE_LED_NIV_HAUT, GPIO.HIGH)
             GPIO.output(self.BROCHE_LED_NIV_MAX, GPIO.LOW)
         else:
             GPIO.output(self.BROCHE_LED_NIV_VIDE, GPIO.LOW)
-            GPIO.output(self.BROCHE_LED_NIV_MIN, GPIO.LOW)
+            GPIO.output(self.BROCHE_LED_NIV_BAS, GPIO.LOW)
             GPIO.output(self.BROCHE_LED_NIV_NORMAL, GPIO.LOW)
             GPIO.output(self.BROCHE_LED_NIV_HAUT, GPIO.LOW)
             GPIO.output(self.BROCHE_LED_NIV_MAX, GPIO.HIGH)

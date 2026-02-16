@@ -64,10 +64,10 @@ Les mesures de niveau, de température ainsi que les alertes sont publiés sur l
 
 ### Controleur bouillage
 
-On exécute ce composant sur le RaspberryPi Zero branché au circuit de CabanaSucre, la sonde de température, la sonde de niveau et la pompe du réservoir. Ce cicruit est relié au RaspberryPi Zero par son port GPIO.
+On exécute ce composant sur le RaspberryPi 2 branché au circuit de CabanaSucre, la sonde de température, la sonde de niveau et la pompe du réservoir. Ce cicruit est relié au RaspberryPi 2 par son port GPIO.
 
 Pré-requis
-    Raspberry Pi Zero
+    Raspberry Pi 2
     Raspberry Pi OS Trixie
     Réseau Wifi
     Entré DNS ou fichier hosts avec le nom rpi0wifi correspondant à l'adresse IP du Raspberry Pi
@@ -96,7 +96,7 @@ Pré-requis
 Voici la liste des éléments nécessaires pour ce projet avec des références Amazon:
 
     Unité de calcules:
-        2 Raspberry pi avec cartes Wifi. Pour mon système, j'ai un Raspberry PI Zero pour le contrôleur et un Rasberry PI 3 pour la console. Raspberry PI Zero 2W avec têtes pré-soudées (40$). Raspberry PI 4 Modèle B (88$). Pour utiliser un Raspberry PI de première génération comme dans mon cas, il faut ajouter une carte réseau sans fil USB et un adaptateur USB vers micro USB.
+        2 Raspberry pi avec cartes Wifi. Pour mon système, j'ai un Raspberry PI 2 pour le contrôleur et un Rasberry PI 3 pour la console. Raspberry PI Zero 2W avec têtes pré-soudées (40$). Raspberry PI 4 Modèle B (88$). Pour utiliser un Raspberry PI 2 comme dans mon cas, il faut ajouter une carte réseau sans fil USB.
         Un réseau sans fil.
         Un serveur Kafka
     Alimentation électrique:
@@ -118,7 +118,7 @@ Voici la liste des éléments nécessaires pour ce projet avec des références 
         Un fil 3 brins habituellement utilisé pour les thermostats de maison. THE CIMPLE CO Fil de thermostat 18/3 cuivre massif 3m (22$)
         Une prise DB9 mâle avec connecteur (anciennement utilisé pour relier les ports séries aux motherboards). Startech 1 port db9 16" port série BRacket vers en-tête 10 broches PLATE9M16LP (8$)
         Une prise DB9 femelle avec fil 9 brins en cuivre à extrémité ouvert (anciennement utilisé pour les modems externes). XMSJSIY Câble adaptateur DB9 connecteur D-SUB 9 broches RS232 avec fil nu 22 AWG DB9 femelle (22,70$)
-        Du fil en acier inoxydable avec gaine en plastique. Au moins 20 pieds. MECCANIXITY Câble metallique de 30m X 1mm en acier inoxydable 304 avec revêtement en vinyle avec 10 manchons, 1mm de diamètre (18,39$). Avec ce fil ca prendrait une tige pour supporter la sonde. De mon côté, j'ai utilisé un fil rigide en acier galvnisé qui sert à attacher des clotures. Il se tient bien mais il a tendance à oxyder.
+        Du fil en acier inoxydable avec gaine en plastique. Au moins 20 pieds. MECCANIXITY Câble metallique de 30m X 1mm en acier inoxydable 304 avec revêtement en vinyle avec 10 manchons, 1mm de diamètre (18,39$). Avec ce fil ca prend une tige pour supporter la sonde.
     Évaporateur
         Un bruleur au propane (comme pour le blé d'inde). Appareil de cuisson au propane 66000 BTU (CANAC 75$) 
         Un grand chaudron de 48 litres. Marmite en aluminium 48 L (CANAC 66$)
@@ -135,8 +135,8 @@ Voici les connexions à faire entre les différents éléments des cricuits et l
 
 La sonde de niveau est constitué de 9 broches placés à des hauteurs différentes. Elles sont décalés d'un pouce les une aux autres. La sonde peut donc musré des niveaux entre 0 et 8 pouces d'eau.
 
-    Niveau: Broche RPI zéro
-    Fond:   1               Une résistance de 220 ohms doit être placée entre la sonde et la broche du Rasberry PI
+    Niveau: Broche RPI 2
+    Fond:   4 (5V)  Une résistance de 220 ohms doit être placée entre la sonde et la broche du Rasberry PI
     1       32
     2       29
     3       22
@@ -176,15 +176,34 @@ La sonde de température est branché à la broche I2C du raspberry PI. Elle per
 
 Pour savoir quand arrêter le processus, il faut savoir s'il reste de l'eau d'érable à bouillir. On met donc un fil a 2 broches a exxtrémité ouvert sur quelques mm (max 5 mm) dans le fonc du réservoir.
 
-    Sonde           Broche RPI Zéro
+    Sonde           Broche RPI 2
     1               1 (3.3V)
     2               36
 
+## LED pour le contrôleur de bouillage
+
+Les LED sont utilisés pour s'assurer du bon fonctionnent du système. Elle ont connectés sur le Raspberry Pi du contrôleur du bouillage et sont à l'extérieur du boitier. 
+
+Il y a une série de 5 LED pour suivre le niveau détecté par le système. Elle sont dans l'ordre suivant de haut en bas:
+
+    1. Rouge pour niveau MAX, lorque le niveau d'eau atteint la broche la plus haute
+    2. Jaune pour le niveau HAUT, lorsque le niveau de remplissage est atteint par la pompe.
+    3. Vert pour le niveau normal de bouillage.
+    4. Jaune pour le niveau BAS, la pompe devrait démarrer lorsque cette LED s'allume.
+    5. Rouge pour le niveau VIDE. L'eau ne devrait jamais être à ce niveau à part lors du démarrage du bouillage.
+
+    LED         Broche RPI 2
+    Rouge MAX   10
+    Jaune HAUT  9
+    Vert NORMAL 11
+    Jaune BAS   6
+    Rouge VIDE  13
+
 ## Écran LCD
 
-Un écran LCD est connecté sur le Rasbperry PI 3 qui sert de console du surveillance du procédé.
+Un écran LCD est connecté sur les deux Rasbperry. Il sert de d'affichage pour la surveillance du procédé.
 
-    LCD             Broche RPI 3
+    LCD             Broche RPI
     GND (Rouge)     6
     Vcc (Noir)      4 (5V)
     SDA             3
@@ -234,4 +253,4 @@ La variable cabanasucre_bootstrap_server doit contenir les informations de conne
 
 Pour lancer la configuration et le déploiement, lancer la commande suivante:
 
-    ansible-playbook -i chemin_vers_mon_inventaire/hosts scripts/deploy.yml
+    ansible-playbook -i chemin_vers_mon_inventaire/hosts scripts/deploy.yml (-l bouillage|console_sucrier)
