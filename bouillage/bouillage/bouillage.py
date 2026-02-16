@@ -1,19 +1,17 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import glob
-import signal
-import sys
 from time import localtime, strftime, sleep
 try:
     import RPi.GPIO as GPIO
 except ImportError:
     import Mock.GPIO as GPIO
 import logging
-import threading
 import os
 from inspqkafka.producteur import obtenirConfigurationsProducteurDepuisVariablesEnvironnement, creerProducteur, publierMessage
-import argparse
+
 from statistics import mean, pstdev
+from cabanasucre_commun.lcd_i2c import Lcd
 
 class NiveauCtrlCmd:
     BROCHE_NIV_1 = 12 # 32
@@ -26,6 +24,16 @@ class NiveauCtrlCmd:
     BROCHE_NIV_8 = 17 # 11
     BROCHE_POMPE = 26 # 37
     BROCHE_TONNE = 16 # 36
+
+    BROCHE_LED_NIV_VIDE = 13 # 33
+    BROCHE_LED_NIV_BAS = 6 # 31
+    BROCHE_LED_NIV_NORMAL = 11 # 23
+    BROCHE_LED_NIV_HAUT = 9 # 21
+    BROCHE_LED_NIV_MAX = 10 # 10
+
+    BROCHE_LED_TONNE_VIDE = 7 # 26
+    BROCHE_LED_POMPE_ON = 8 # 24
+
     ERREUR = -1
     VIDE = 0
     BAS = 1
@@ -158,7 +166,14 @@ class NiveauCtrlCmd:
     temperature_base = None
     
     
-    def __init__(self, log_level=logging.INFO, niveau_bas=BAS, niveau_haut=HAUT, niveau_max=MAX, log_path="/var/log", log_file_name="cabanasucre"):
+    def __init__(self,
+                 log_level=logging.INFO,
+                 niveau_bas=BAS,
+                 niveau_haut=HAUT,
+                 niveau_max=MAX,
+                 log_path="/var/log",
+                 log_file_name="cabanasucre",
+                 modprobe=True):
         self.log_path = log_path
         self.log_file_name = log_file_name
         format = "%(asctime)s: %(message)s"
@@ -191,6 +206,48 @@ class NiveauCtrlCmd:
             {
                 "numero": self.BROCHE_POMPE,
                 "nom": "POMPE",
+                "mode": GPIO.OUT,
+                "initial": GPIO.LOW
+            },
+            {
+                "numero": self.BROCHE_LED_NIV_VIDE,
+                "nom": "LED_NIV_VIDE",
+                "mode": GPIO.OUT,
+                "initial": GPIO.LOW
+            },
+            {
+                "numero": self.BROCHE_LED_NIV_BAS,
+                "nom": "LED_NIV_MIN",
+                "mode": GPIO.OUT,
+                "initial": GPIO.LOW
+            },
+            {
+                "numero": self.BROCHE_LED_NIV_NORMAL,
+                "nom": "LED_NIV_NORMAL",
+                "mode": GPIO.OUT,
+                "initial": GPIO.LOW
+            },
+            {
+                "numero": self.BROCHE_LED_NIV_HAUT,
+                "nom": "LED_NIV_HAUT",
+                "mode": GPIO.OUT,
+                "initial": GPIO.LOW
+            },
+            {
+                "numero": self.BROCHE_LED_NIV_MAX,
+                "nom": "LED_NIV_MAX",
+                "mode": GPIO.OUT,
+                "initial": GPIO.LOW
+            },
+            {
+                "numero": self.BROCHE_LED_POMPE_ON,
+                "nom": "LED_POMPE_ON",
+                "mode": GPIO.OUT,
+                "initial": GPIO.LOW
+            },
+            {
+                "numero": self.BROCHE_LED_TONNE_VIDE,
+                "nom": "LED_TONNE_VIDE",
                 "mode": GPIO.OUT,
                 "initial": GPIO.LOW
             }
@@ -231,6 +288,7 @@ class NiveauCtrlCmd:
                 initial = connecteur["initial"] if "initial" in connecteur else GPIO.LOW
                 GPIO.setup(connecteur["numero"], connecteur["mode"], initial=initial)
 
+        self.display = Lcd()
         self.arreter_pompe()
         self.verifier_niveau_tonne()
         self.NIVEAU = self.mesurer_niveau()
@@ -239,8 +297,9 @@ class NiveauCtrlCmd:
         self.afficher_niveau()
         self.kafka_config = obtenirConfigurationsProducteurDepuisVariablesEnvironnement() if 'BOOTSTRAP_SERVERS' in os.environ else {}
         self.producteur = creerProducteur(config=self.kafka_config) if "bootstrap.servers" in self.kafka_config else None
-        os.system('sudo modprobe w1-gpio')
-        os.system('sudo modprobe w1-therm')
+        if modprobe:
+            os.system('sudo modprobe w1-gpio')
+            os.system('sudo modprobe w1-therm')
         self.publier_niveau(niveau=self.NIVEAU)
         
 
@@ -252,7 +311,38 @@ class NiveauCtrlCmd:
             self.logger.warning("Niveau: {niveau} {message}".format(niveau=self.info_niveaux[niveau]["display"], message=self.info_niveaux[niveau]["message"]))
         else:
             self.logger.info("Niveau: {niveau} {message}".format(niveau=self.info_niveaux[niveau]["display"], message=self.info_niveaux[niveau]["message"]))
-            
+
+        if niveau == self.VIDE:
+            GPIO.output(self.BROCHE_LED_NIV_VIDE, GPIO.HIGH)
+            GPIO.output(self.BROCHE_LED_NIV_BAS, GPIO.LOW)
+            GPIO.output(self.BROCHE_LED_NIV_NORMAL, GPIO.LOW)
+            GPIO.output(self.BROCHE_LED_NIV_HAUT, GPIO.LOW)
+            GPIO.output(self.BROCHE_LED_NIV_MAX, GPIO.LOW)
+        elif niveau > self.VIDE and niveau <= self.BAS:
+            GPIO.output(self.BROCHE_LED_NIV_VIDE, GPIO.LOW)
+            GPIO.output(self.BROCHE_LED_NIV_BAS, GPIO.HIGH)
+            GPIO.output(self.BROCHE_LED_NIV_NORMAL, GPIO.LOW)
+            GPIO.output(self.BROCHE_LED_NIV_HAUT, GPIO.LOW)
+            GPIO.output(self.BROCHE_LED_NIV_MAX, GPIO.LOW)
+        elif niveau > self.BAS and niveau < self.HAUT:
+            GPIO.output(self.BROCHE_LED_NIV_VIDE, GPIO.LOW)
+            GPIO.output(self.BROCHE_LED_NIV_BAS, GPIO.LOW)
+            GPIO.output(self.BROCHE_LED_NIV_NORMAL, GPIO.HIGH)
+            GPIO.output(self.BROCHE_LED_NIV_HAUT, GPIO.LOW)
+            GPIO.output(self.BROCHE_LED_NIV_MAX, GPIO.LOW)
+        elif niveau >= self.HAUT and niveau < self.MAX:
+            GPIO.output(self.BROCHE_LED_NIV_VIDE, GPIO.LOW)
+            GPIO.output(self.BROCHE_LED_NIV_BAS, GPIO.LOW)
+            GPIO.output(self.BROCHE_LED_NIV_NORMAL, GPIO.LOW)
+            GPIO.output(self.BROCHE_LED_NIV_HAUT, GPIO.HIGH)
+            GPIO.output(self.BROCHE_LED_NIV_MAX, GPIO.LOW)
+        else:
+            GPIO.output(self.BROCHE_LED_NIV_VIDE, GPIO.LOW)
+            GPIO.output(self.BROCHE_LED_NIV_BAS, GPIO.LOW)
+            GPIO.output(self.BROCHE_LED_NIV_NORMAL, GPIO.LOW)
+            GPIO.output(self.BROCHE_LED_NIV_HAUT, GPIO.LOW)
+            GPIO.output(self.BROCHE_LED_NIV_MAX, GPIO.HIGH)
+
 
     def publier_niveau(self, niveau=None):
         if niveau is None:
@@ -274,6 +364,7 @@ class NiveauCtrlCmd:
             if not self.pompe_en_action:
                 self.logger.info("Démarrer la pompe pour ajouter de l'eau.")
                 GPIO.output(self.BROCHE_POMPE, GPIO.HIGH)
+                GPIO.output(self.BROCHE_LED_POMPE_ON, GPIO.HIGH)
                 self.pompe_en_action = True
                 self.publier_alerte(contenu_message=self.message_alerte_demarrage_pompe)
         else:
@@ -283,6 +374,7 @@ class NiveauCtrlCmd:
         if self.pompe_en_action:
             self.logger.info("Arrêter la pompe.")
             GPIO.output(self.BROCHE_POMPE, GPIO.LOW)
+            GPIO.output(self.BROCHE_LED_POMPE_ON, GPIO.LOW)
             self.pompe_en_action = False
             self.publier_alerte(contenu_message=self.message_alerte_arret_pompe)
             
@@ -362,11 +454,13 @@ class NiveauCtrlCmd:
         if sonde_niveau_tonne:
             self.logger.debug("Il y a de l'eau dans la tonne")
             self.pompe_enabled = True
+            GPIO.output(self.BROCHE_LED_TONNE_VIDE, GPIO.LOW)
             self.mesurer_niveau()
             if self.NIVEAU < self.BAS:
                 self.demarrer_pompe()
         else:
             self.logger.warning("Il n'y a plus d'eau dans la tonne.")
+            GPIO.output(self.BROCHE_LED_TONNE_VIDE, GPIO.HIGH)
             if self.pompe_en_action:
                 self.arreter_pompe()
             self.pompe_enabled = False
@@ -415,6 +509,7 @@ class NiveauCtrlCmd:
                 alerte = self.message_alerte_temperature_de_base_etablie.copy()
                 alerte['display'] = "{msg}: {temp} C".format(msg=alerte["display"], temp=self.temperature_base)
                 self.publier_alerte(contenu_message=alerte)
+                self.afficher_temperature_sirop(temperature=self.temperature_base + self.ecart_pour_fin_bouillage)
 
     def lire_temperature(self):
         while True:
@@ -442,6 +537,7 @@ class NiveauCtrlCmd:
             if len(lines) > 0:
                 temperature = int(lines[0])/1000
                 self.logger.info("La temperature est: {0}".format(temperature))
+                self.afficher_temperature(temperature=temperature)
                 self.traiter_temperature(value=temperature)
                 if self.producteur is not None:
                     message = {}
@@ -452,72 +548,17 @@ class NiveauCtrlCmd:
             else:
                 print("La sonde n'a pas retourné de température")
             sleep(60)
-            
+
+    def afficher_temperature(self, temperature: float) -> None:
+        affichage = f'TEMP: {str(temperature)}'
+        self.display.lcd_display_string(affichage.ljust(16), 1)
+    
+    def afficher_temperature_sirop(self, temperature: float) -> None:
+        affichage = f'SIROP: {str(temperature)}'
+        self.display.lcd_display_string(affichage.ljust(16), 2)
+
+
     def maintenant(self):
         str_maintenant = strftime("%Y-%m-%d:%H:%M:%S", localtime())
         return str_maintenant
 
-class FakeArgs():
-    loglevel = "info"
-    niveaubas = NiveauCtrlCmd.BAS
-    niveauhaut = NiveauCtrlCmd.HAUT
-    niveaumax = NiveauCtrlCmd.MAX
-    logpath = "/tmp"
-    logfile = "cabaneasucre.log"
-
-parser = argparse.ArgumentParser(prog="bouillage_controle", description="Automatise le processus de bouillage de sirop d'érable")
-parser.add_argument('-log',
-                    '--loglevel',
-                    default='info',
-                    help='Provide logging level. Example --loglevel debug, default=info' )
-parser.add_argument('-l',
-                    '--niveaubas',
-                    default=NiveauCtrlCmd.BAS,
-                    type=int,
-                    help='Niveau minimum pour le démarrage de la pompe. Example --niveaubas=3, défaut=2')
-parser.add_argument('-u',
-                    '--niveauhaut',
-                    default=NiveauCtrlCmd.HAUT,
-                    type=int,
-                    help="Niveau a atteindre pour l'arrêt de la pompe. Example --niveauhaut=6, défaut=4")
-parser.add_argument('-m',
-                    '--niveaumax',
-                    default=NiveauCtrlCmd.MAX,
-                    type=int,
-                    help="Niveau maximum possible. Example --niveaumax=8, défaut=8")
-parser.add_argument('-p',
-                    '--logpath',
-                    default='/tmp',
-                    type=str,
-                    help='Répertoire du fichier de log. Example --logpath=/var/log, défaut=/tmp')
-parser.add_argument('-f',
-                    '--logfile',
-                    default='cabanasucre',
-                    type=str,
-                    help='Nom du fichier de log. Example --logfile=cabane, défaut=cabanasucre')
-try:
-    args = parser.parse_args()
-except:
-    print("Erreur")
-    args = FakeArgs()
-
-
-ctrl_cmd = NiveauCtrlCmd(log_level=args.loglevel.upper(),
-                         niveau_bas=args.niveaubas,
-                         niveau_haut=args.niveauhaut,
-                         niveau_max=args.niveaumax,
-                         log_path=args.logpath,
-                         log_file_name=args.logfile)
-
-def signal_handler(sig, frame):
-    ctrl_cmd.arreter_pompe()
-    GPIO.cleanup()
-    sys.exit(0)
-
-def main():
-    signal.signal(signal.SIGINT, signal_handler)
-    temp_thread = threading.Thread(target=ctrl_cmd.lire_temperature)
-    temp_thread.start()
-
-if __name__ == "__main__":
-    main()

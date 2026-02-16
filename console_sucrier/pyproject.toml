@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "console-sucrier"
+version = "0.3.3"
+description = "Module console permettant de suivre le bouillage de sirop d'érable"
+authors = ["elfelip <elfelip@yahoo.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+inspqkafka = "^0.9.1"
+mock-gpio = "^0.2.0"
+rpi-lgpio = "^0.6"
+smbus = "^1.1.post2"
+cabanasucre-commun = "^0.1.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry.scripts]
+console_sucrier = "console_sucrier.main:main"
+

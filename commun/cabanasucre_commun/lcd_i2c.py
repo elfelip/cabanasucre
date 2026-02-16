@@ -1,3 +1,14 @@
+##########################################################################
+# I2C Driver 16x2 LCD Screens
+#
+# Cloned and adapted by Philippe Gauthier: 
+#
+# Author: Matthew Timmons-Brown (the-raspberry-pi-guy)
+# Contributors: https://github.com/the-raspberry-pi-guy/lcd/contributors
+#
+# Repo: https://github.com/the-raspberry-pi-guy/lcd
+##########################################################################
+
 from smbus import SMBus
 from RPi.GPIO import RPI_REVISION
 from time import sleep

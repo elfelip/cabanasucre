@@ -1,0 +1,5 @@
+ansible_user: pi
+ansible_become: true
+ansible_become_method: sudo
+
+cabanasucre_bootstrap_server: kube06.lacave.info:31092,kube07.lacave.info:31093,kube08.lacave.info:31094

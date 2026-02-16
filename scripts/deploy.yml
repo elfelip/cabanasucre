@@ -1,0 +1,229 @@
+- name: Bouillage
+  hosts: bouillage
+  vars:
+    cabanasucre_service: bouillage
+    cabanasucre_venv: /opt/cabanasucre_venv
+    cabanasucre_version: 0.3.2
+    cabanasucre_user: pi
+    cabanasucre_group: pi
+    cabanasucre_home: /home/{{ cabanasucre_user }}
+    packages:
+      - build-essential
+      - libssl-dev
+      - libffi-dev
+      - python3-dev
+      - python3-pip
+      - python3-venv
+      - python3-smbus
+      - librdkafka-dev
+    cabanasucre_args: "--loglevel {{ cabanasucre_loglevel | default('info') }} \
+                      --logpath {{ cabanasucre_logpath | default('/var/log') }} \
+                      --logfile {{ cabanasucre_logfile | default('cabanasucre') }} \
+                      --niveaubas {{ cabanasucre_niveau_bas | default(2) | string }} \
+                      --niveauhaut {{ cabanasucre_niveau_haut | default(4) | string }} \
+                      --niveaumax {{ cabanasucre_niveau_max | default(8) | string }}"
+
+  tasks:
+    - name: Ensure w1-gpio overlay is present in /boot/firmware/config.txt
+      ansible.builtin.lineinfile:
+        path: /boot/firmware/config.txt
+        line: dtoverlay=w1-gpio
+        state: present
+      notify: reboot
+
+    - name: Ensure w1-therm kernel module is loaded at boot time
+      ansible.builtin.lineinfile:
+        path: /etc/modules
+        line: w1-therm
+        state: present
+      notify: reboot
+
+    - name: Load w1-gpio kernel module immediately (for current session)
+      community.general.modprobe:
+        name: w1-gpio
+        state: present
+
+    - name: Load w1-therm kernel module immediately (for current session)
+      community.general.modprobe:
+        name: w1-therm
+        state: present
+
+    - name: Ensure i2c_arm is present in /boot/firmware/config.txt
+      ansible.builtin.lineinfile:
+        path: /boot/firmware/config.txt
+        line: dtparam=i2c_arm=on
+        state: present
+      notify: reboot
+
+    - name: Ensure i2c-dev kernel module is loaded at boot time
+      ansible.builtin.lineinfile:
+        path: /etc/modules
+        line: i2c-dev
+        state: present
+      notify: reboot
+
+    - name: Load i2c-dev kernel module immediately (for current session)
+      community.general.modprobe:
+        name: i2c-dev
+        state: present
+
+    - name: Installer les packages pré-requis
+      ansible.builtin.apt:
+        name: "{{ package }}"
+        state: present
+      loop: "{{ packages }}"
+      loop_control:
+        loop_var: package
+
+    - name: Créer le group
+      ansible.builtin.group:
+        name: "{{ cabanasucre_group }}"
+
+    - name: Créer le user
+      ansible.builtin.user:
+        name: "{{ cabanasucre_user }}"
+        group: "{{ cabanasucre_group }}"
+        home: "{{ cabanasucre_home }}"
+        shell: "/bin/bash"
+
+    - name: Create Python virtual environment
+      ansible.builtin.command:
+        cmd: python3 -m venv {{ cabanasucre_venv }}
+        creates: "{{ cabanasucre_venv }}/bin/activate"
+
+    - name: Installer le module de bouillage
+      ansible.builtin.pip:
+        name: "{{ cabanasucre_service }}"
+        version: "{{ cabanasucre_version }}"
+        virtualenv: "{{ cabanasucre_venv }}"
+        state: present
+      notify: reboot
+
+    - name: Créer le fichier de service systemd
+      ansible.builtin.template:
+        src: templates/service.j2
+        dest: /etc/systemd/system/{{ cabanasucre_service }}.service
+        owner: root
+        group: root
+        mode: '0644'
+      notify: reboot
+
+    - name: Créer le fichier de log
+      ansible.builtin.file:
+        path: "{{ cabanasucre_logpath | default('/var/log') }}/{{ cabanasucre_logfile | default('cabanasucre') }}.log"
+        owner: "{{ cabanasucre_user }}"
+        group: "{{ cabanasucre_group }}"
+        mode: '0644'
+        state: touch
+
+    - name: Activer et démarrer le service
+      ansible.builtin.systemd:
+        name: "{{ cabanasucre_service }}.service"
+        enabled: yes
+        state: started
+      notify: reboot
+
+  handlers:
+    - name: reboot
+      ansible.builtin.reboot:
+        reboot_timeout: 600
+
+- name: Console sucrier
+  hosts: console
+  vars:
+    cabanasucre_service: console_sucrier
+    cabanasucre_venv: /opt/cabanasucre_venv
+    cabanasucre_version: 0.2.0
+    cabanasucre_user: pi
+    cabanasucre_group: pi
+    cabanasucre_home: /home/{{ cabanasucre_user }}
+    packages:
+      - build-essential
+      - libssl-dev
+      - libffi-dev
+      - python3-dev
+      - python3-pip
+      - python3-venv
+      - python3-smbus
+      - librdkafka-dev
+    cabanasucre_args: "--loglevel {{ cabanasucre_loglevel | default('info') }}"
+  tasks:
+    - name: Ensure i2c_arm is present in /boot/firmware/config.txt
+      ansible.builtin.lineinfile:
+        path: /boot/firmware/config.txt
+        line: dtparam=i2c_arm=on
+        state: present
+      notify: reboot
+
+    - name: Ensure i2c-dev kernel module is loaded at boot time
+      ansible.builtin.lineinfile:
+        path: /etc/modules
+        line: i2c-dev
+        state: present
+      notify: reboot
+
+    - name: Load i2c-dev kernel module immediately (for current session)
+      community.general.modprobe:
+        name: i2c-dev
+        state: present
+
+    - name: Installer les packages pré-requis
+      ansible.builtin.apt:
+        name: "{{ package }}"
+        state: present
+      loop: "{{ packages }}"
+      loop_control:
+        loop_var: package
+
+    - name: Créer le group
+      ansible.builtin.group:
+        name: "{{ cabanasucre_group }}"
+
+    - name: Créer le user
+      ansible.builtin.user:
+        name: "{{ cabanasucre_user }}"
+        group: "{{ cabanasucre_group }}"
+        home: "{{ cabanasucre_home }}"
+        shell: "/bin/bash"
+
+    - name: Create Python virtual environment
+      ansible.builtin.command:
+        cmd: python3 -m venv {{ cabanasucre_venv }}
+        creates: "{{ cabanasucre_venv }}/bin/activate"
+
+    - name: Installer le module de bouillage
+      ansible.builtin.pip:
+        name: "{{ cabanasucre_service }}"
+        version: "{{ cabanasucre_version }}"
+        virtualenv: "{{ cabanasucre_venv }}"
+        state: present
+      notify: reboot
+
+    - name: Créer le fichier de service systemd
+      ansible.builtin.template:
+        src: templates/service.j2
+        dest: /etc/systemd/system/{{ cabanasucre_service }}.service
+        owner: root
+        group: root
+        mode: '0644'
+      notify: reboot
+
+    - name: Créer le fichier de log
+      ansible.builtin.file:
+        path: "{{ cabanasucre_logpath | default('/var/log') }}/{{ cabanasucre_logfile | default('cabanasucre') }}.log"
+        owner: "{{ cabanasucre_user }}"
+        group: "{{ cabanasucre_group }}"
+        mode: '0644'
+        state: touch
+
+    - name: Activer et démarrer le service
+      ansible.builtin.systemd:
+        name: "{{ cabanasucre_service }}.service"
+        enabled: yes
+        state: started
+      notify: reboot
+
+  handlers:
+    - name: reboot
+      ansible.builtin.reboot:
+        reboot_timeout: 600
