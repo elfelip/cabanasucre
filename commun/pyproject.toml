@@ -2,7 +2,7 @@
 name = "cabanasucre-commun"
 version = "0.1.0"
 description = "Module commun pour les composants de cabanasucre"
-authors = ["elfelip <elfelip@yahoo.com>"]
+authors = ["elfelip <elfelip@yahoo.com>","Matthew Timmons-Brown (the-raspberry-pi-guy)"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
